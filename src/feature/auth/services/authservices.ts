@@ -1,19 +1,25 @@
-import axios from 'axios';
+import apiClient from '../../../shared/services/apiClient';
 
 // ==== Response Types ====
 
 export interface RequestOtpResponse {
   success: boolean;
   msg?: string;
+  info?: {
+    otp: string;
+  };
 }
 
 export interface VerifiedUserResponse {
   token: string;
   success: boolean;
   user: {
-    _id: string;
+    id: string;
+    _id?: string;
     phone?: string;
     email?: string;
+    role: string;
+    wholesalerId?: string;
     createdAt?: string;
   };
 }
@@ -26,10 +32,7 @@ export const requestOtpOnPhone = async (
 ): Promise<RequestOtpResponse> => {
   console.log(mobile, typeof mobile);
 
-  const response = await axios.post(
-    'https://broadcast-info-be.onrender.com/api/auth/send-otp',
-    { mobile: mobile },
-  );
+  const response = await apiClient.post('/api/auth/send-otp', { mobile });
   console.log(`OTP requested for mobile: ${mobile}`);
   return response.data as RequestOtpResponse;
 };
@@ -40,16 +43,11 @@ export const verifyOtpFromPhone = async (
   otp: string,
 ): Promise<VerifiedUserResponse | null> => {
   try {
-    const response = await axios.post(
-      'https://broadcast-info-be.onrender.com/api/auth/verify-otp',
-      {
-        mobile: mobile,
-        otp: otp,
-      },
-    );
-    console.log(response);
-
-    console.log(response.data);
+    const response = await apiClient.post('/api/auth/verify-otp', {
+      mobile,
+      otp,
+    });
+    console.log('OTP Verification Response:', response.data);
 
     if (response.status === 200) {
       return response.data as VerifiedUserResponse;

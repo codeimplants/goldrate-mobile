@@ -15,6 +15,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [loadingApi, setLoadingApi] = useState<boolean>(false); // API loading
   const [loadingAuth, setLoadingAuth] = useState<boolean>(true); // Initial auth check
   const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(null);
 
   const requestOtp = async (phone: string) => {
     try {
@@ -50,8 +51,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // ✅ Save user & token in storage
         await AsyncStorage.setItem('user', JSON.stringify(response.user));
         await AsyncStorage.setItem('token', response.token);
+        await AsyncStorage.setItem('role', response.user.role);
+        await AsyncStorage.setItem('userId', response.user.id.toString());
+        if (response.user.wholesalerId) {
+          await AsyncStorage.setItem('wholesalerId', response.user.wholesalerId.toString());
+        }
 
         setUser(response.user);
+        setRole(response.user.role);
         setIsAuthenticated(true);
         return true;
       }
@@ -70,9 +77,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       try {
         const storedUser = await AsyncStorage.getItem('user');
         const storedToken = await AsyncStorage.getItem('token');
+        const storedRole = await AsyncStorage.getItem('role');
 
-        if (storedUser && storedToken) {
+        if (storedUser && storedToken && storedRole) {
           setUser(JSON.parse(storedUser));
+          setRole(storedRole);
           setIsAuthenticated(true);
         }
       } catch (error) {
@@ -86,11 +95,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = async () => {
     try {
-      AsyncStorage.removeItem('user');
-      AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('user');
+      await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('role');
+      await AsyncStorage.removeItem('userId');
+      await AsyncStorage.removeItem('wholesalerId');
+      setUser(null);
+      setRole(null);
       setIsAuthenticated(false);
     } catch (error) {
-      console.error('Error loging out:', error);
+      console.error('Error logging out:', error);
     }
   };
 
@@ -98,9 +112,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     <AuthContext.Provider
       value={{
         user,
+        role,
         otpSent,
         isAuthenticated,
         loadingApi,
+        loadingAuth,
         requestOtp,
         verifyOtp,
         logout

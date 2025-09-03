@@ -13,71 +13,42 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Yup from 'yup';
 import { useAuth } from '../../hooks/useAuth';
 import LinearGradient from 'react-native-linear-gradient';
-import { StyleSheet, TextInput } from 'react-native';
+import { StyleSheet, TextInput, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [otpSent, setOtpSent] = useState<boolean>(false);
+  const [cooldown, setCooldown] = useState<number>(0);
 
-  const { requestOtp, verifyOtp } = useAuth();
-
-  // refs for OTP inputs
-  const otpRefs = Array.from({ length: 4 }).map(() => useRef<TextInput>(null));
+  const { requestOtp } = useAuth();
+  const navigation = useNavigation();
 
   const formik = useFormik({
-    initialValues: { phone: '', otp: '' },
+    initialValues: { phone: '' },
     validationSchema: Yup.object({
       phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^\d{10}$/, 'Phone Number should be exactly 10 digits.'),
-      otp: Yup.string().when([], {
-        is: () => otpSent,
-        then: schema =>
-          schema
-            .required('OTP is required')
-            .matches(/^\d{4}$/, 'OTP must be exactly 4 digits'),
-      }),
     }),
     onSubmit: async values => {
       setError(null);
       try {
         setLoading(true);
-        if (!otpSent) {
-          // send otp
-          await requestOtp(values.phone);
-          setOtpSent(true);
-        } else {
-          // verify otp
-          await verifyOtp(values.otp);
-          // ✅ navigate or store token
+        const response = await requestOtp(values.phone);
+        if (response) {
+          Alert.alert('OTP Sent', `OTP: ${response.info?.otp || 'Check your phone'}`);
+          navigation.navigate('otp' as never);
         }
       } catch (err) {
-        setError(
-          otpSent ? 'Invalid OTP. Please try again.' : 'Failed to send OTP.',
-        );
+        setError('Failed to send OTP. Please try again.');
       } finally {
         setLoading(false);
       }
     },
   });
 
-  const handleOtpChange = (text: string, index: number) => {
-    const otpArray = formik.values.otp.split('');
-    otpArray[index] = text;
-    const newOtp = otpArray.join('');
-    formik.setFieldValue('otp', newOtp);
 
-    // auto move focus
-    if (text && index < otpRefs.length - 1) {
-      otpRefs[index + 1].current?.focus();
-    }
-
-    // move back on delete
-    if (!text && index > 0) {
-      otpRefs[index - 1].current?.focus();
-    }
-  };
 
   return (
     <SafeAreaProvider>
@@ -120,50 +91,17 @@ const Login: React.FC = () => {
                   Phone Number
                 </Text>
                 <TextInput
-                  editable={!otpSent}
                   keyboardType="number-pad"
                   onChangeText={formik.handleChange('phone')}
                   onBlur={formik.handleBlur('phone')}
                   value={formik.values.phone}
                   placeholder="Enter 10-digit phone number"
-                  style={[
-                    Style.phoneInput,
-                    otpSent && { backgroundColor: '#f3f4f6' },
-                  ]}
+                  style={Style.phoneInput}
                 />
                 <FormControl.ErrorMessage>
                   {formik.errors.phone}
                 </FormControl.ErrorMessage>
               </FormControl>
-
-              {/* OTP Boxes */}
-              {otpSent && (
-                <FormControl
-                  mt={4}
-                  isInvalid={!!formik.errors.otp && formik.touched.otp}
-                >
-                  <Text fontSize={'md'} color="#7d36a0">
-                    Verification Code
-                  </Text>
-                  <HStack space={3} justifyContent="center">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <TextInput
-                        key={i}
-                        ref={otpRefs[i]}
-                        maxLength={1}
-                        editable={otpSent}
-                        keyboardType="number-pad"
-                        value={formik.values.otp[i] || ''}
-                        onChangeText={text => handleOtpChange(text, i)}
-                        style={Style.inputFiels}
-                      />
-                    ))}
-                  </HStack>
-                  <FormControl.ErrorMessage>
-                    {formik.errors.otp}
-                  </FormControl.ErrorMessage>
-                </FormControl>
-              )}
 
               {/* Submit Button */}
               <LinearGradient
@@ -189,26 +127,11 @@ const Login: React.FC = () => {
                     color: 'white',
                   }}
                 >
-                  {otpSent ? 'Submit OTP' : 'Verify & Login'}
+                  Send OTP
                 </Button>
               </LinearGradient>
 
-              {/* Change Phone */}
-              {otpSent && (
-                <Button
-                  variant="outline"
-                  borderColor="purple.500"
-                  borderRadius="lg"
-                  _text={{ color: 'purple.600', fontWeight: 'medium' }}
-                  mt={4}
-                  onPress={() => {
-                    setOtpSent(false);
-                    formik.resetForm();
-                  }}
-                >
-                  Change Phone Number
-                </Button>
-              )}
+
 
               {error && (
                 <Text color="red.500" fontSize="sm" textAlign="center">
