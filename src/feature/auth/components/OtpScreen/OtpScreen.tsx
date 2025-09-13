@@ -14,6 +14,7 @@ import { useAuth } from '../../hooks/useAuth';
 import LinearGradient from 'react-native-linear-gradient';
 import { StyleSheet, TextInput, Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { saveLoginSession } from '../../../../shared/utils/biometricAuth';
 
 const OtpScreen: React.FC = () => {
   const [otp, setOtp] = useState<string>('');
@@ -68,8 +69,9 @@ const OtpScreen: React.FC = () => {
     setError(null);
 
     try {
-      const success = await verifyOtp(otp);
-      if (success) {
+      const result = await verifyOtp(otp);
+      if (result) {
+         await saveLoginSession(result.token, result.user);
         // Navigation will be handled by the auth state change
         Alert.alert('Success', 'Login successful!');
       } else {

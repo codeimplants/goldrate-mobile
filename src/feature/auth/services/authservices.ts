@@ -41,7 +41,7 @@ export const requestOtpOnPhone = async (
 export const verifyOtpFromPhone = async (
   mobile: string,
   otp: string,
-): Promise<VerifiedUserResponse | null> => {
+): Promise<VerifiedUserResponse> => {
   try {
     const response = await apiClient.post('/api/auth/verify-otp', {
       mobile,
@@ -52,9 +52,11 @@ export const verifyOtpFromPhone = async (
     if (response.status === 200) {
       return response.data as VerifiedUserResponse;
     }
-    return null;
+
+    
+    return response.data as VerifiedUserResponse;
   } catch (error) {
     console.error('Error verifying phone OTP:', error);
-    return null;
+    throw error;
   }
 };

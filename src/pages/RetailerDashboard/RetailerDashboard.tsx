@@ -10,11 +10,13 @@ import {
   Card,
   Badge,
   Divider,
+  Spinner,
 } from 'native-base';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../../feature/auth/hooks/useAuth';
 import { Alert } from 'react-native';
+import { connectSocket } from '../../shared/services/socket';
 
 interface GoldRate {
   id: string;
@@ -26,32 +28,48 @@ interface GoldRate {
 const RetailerDashboard: React.FC = () => {
   const { logout, user } = useAuth();
   const [goldRates, setGoldRates] = useState<GoldRate[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true); // Start with true to prevent empty page
+  const [initialLoad, setInitialLoad] = useState(true); // Track if this is first load
 
-  // Mock data - replace with actual API call
   useEffect(() => {
-    const mockRates: GoldRate[] = [
-      {
-        id: '1',
-        type: '24K Gold',
-        rate: 65000,
-        timestamp: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        type: '22K Gold',
-        rate: 62000,
-        timestamp: new Date().toISOString(),
-      },
-      {
-        id: '3',
-        type: '18K Gold',
-        rate: 58000,
-        timestamp: new Date().toISOString(),
-      },
-    ];
-    setGoldRates(mockRates);
-  }, []);
+    let isActive = true;
+    let socket: any = null;
+    (async () => {
+      if (!initialLoad) return; // Only run once
+      
+      setLoading(true);
+      socket = await connectSocket();
+      if (!socket) {
+        setLoading(false);
+        setInitialLoad(false);
+        return;
+      }
+
+      socket.on('rateUpdated', (data: any) => {
+        if (!isActive) return;
+        // Web sends: { purity, rate }
+        const item: GoldRate = {
+          id: Date.now().toString(),
+          type: `${data.purity} Gold`,
+          rate: Number(data.rate),
+          timestamp: new Date().toISOString(),
+        };
+        // Put latest on top, keep a small list
+        setGoldRates(prev => [item, ...prev].slice(0, 5));
+      });
+      
+      // Set initial loading to false after socket connection
+      setLoading(false);
+      setInitialLoad(false);
+    })();
+
+    return () => {
+      isActive = false;
+      try {
+        socket?.off?.('rateUpdated');
+      } catch {}
+    };
+  }, [initialLoad]);
 
   const handleLogout = () => {
     Alert.alert(
@@ -82,9 +100,12 @@ const RetailerDashboard: React.FC = () => {
     return `₹${price.toLocaleString()}`;
   };
 
-  const formatTime = (timestamp: string) => {
-    return new Date(timestamp).toLocaleTimeString();
-  };
+ const formatDateTime = (isoString: string) => {
+  const dateObj = new Date(isoString);
+  const date = dateObj.toLocaleDateString();
+  const time = dateObj.toLocaleTimeString();
+  return `${date} ${time}`;
+};
 
   return (
     <SafeAreaProvider>
@@ -129,10 +150,16 @@ const RetailerDashboard: React.FC = () => {
 
           {/* Main Content */}
           <ScrollView flex={1} px={4} py={6}>
-            <VStack space={4}>
-              <Heading size="md" color="purple.800" mb={2}>
-                Welcome, {user?.name || 'Retailer'}
-              </Heading>
+            {loading ? (
+              <VStack flex={1} justifyContent="center" alignItems="center" py={20}>
+                <Spinner size="lg" color="purple.600" />
+                <Text color="purple.800" mt={4}>Loading retailer screen...</Text>
+              </VStack>
+            ) : (
+              <VStack space={4}>
+                <Heading size="md" color="purple.800" mb={2}>
+                  Welcome, {user?.name || 'Retailer'}
+                </Heading>
 
               {/* Current Gold Rates */}
               <Card bg="white" p={4} borderRadius="xl" shadow={2}>
@@ -155,7 +182,7 @@ const RetailerDashboard: React.FC = () => {
                               {rate.type}
                             </Text>
                             <Text fontSize="xs" color="gray.500">
-                              Updated: {formatTime(rate.timestamp)}
+                              Updated: {formatDateTime(rate.timestamp)}
                             </Text>
                           </VStack>
                           <Text fontSize="lg" fontWeight="bold" color="green.600">
@@ -211,7 +238,8 @@ const RetailerDashboard: React.FC = () => {
                   </Text>
                 </VStack>
               </Card>
-            </VStack>
+              </VStack>
+            )}
           </ScrollView>
         </Box>
       </LinearGradient>

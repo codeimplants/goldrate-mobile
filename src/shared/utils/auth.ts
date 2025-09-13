@@ -61,3 +61,9 @@ export const logoutUser = async (): Promise<void> => {
     console.error('Error during logout:', error);
   }
 };
+
+
+function atob(arg0: string): string {
+  throw new Error('Function not implemented.');
+}
+

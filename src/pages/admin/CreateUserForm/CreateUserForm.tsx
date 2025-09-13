@@ -59,7 +59,7 @@ const CreateUserForm: React.FC = () => {
       setLoading(true);
       try {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
         
         Alert.alert(
           'Success',
@@ -278,20 +278,19 @@ const CreateUserForm: React.FC = () => {
                       Notes
                     </Text>
                   </FormControl.Label>
-                  <TextArea
-                    placeholder="Additional notes (optional)"
-                    value={formik.values.notes}
-                    onChangeText={formik.handleChange('notes')}
-                    borderRadius="lg"
-                    h={20}
-                  />
+                  <Input
+  placeholder="Additional notes (optional)"
+  value={formik.values.notes}
+  onChangeText={formik.handleChange('notes')}
+  borderRadius="lg"
+/>
                 </FormControl>
 
                 {/* Submit Button */}
                 <Button
                   bg="purple.600"
                   _text={{ color: 'white', fontWeight: 'bold' }}
-                  onPress={formik.handleSubmit}
+                  onPress={()=>formik.handleSubmit()}
                   isLoading={loading}
                   borderRadius="lg"
                   py={3}
@@ -309,3 +308,4 @@ const CreateUserForm: React.FC = () => {
 };
 
 export default CreateUserForm;
+

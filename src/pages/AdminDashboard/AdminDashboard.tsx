@@ -8,6 +8,7 @@ import {
   Text,
   ScrollView,
   Card,
+  Spinner,
 } from 'native-base';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
@@ -19,6 +20,15 @@ import { Alert } from 'react-native';
 const AdminDashboard: React.FC = () => {
   const { logout, user } = useAuth();
   const navigation = useNavigation();
+  const [loading, setLoading] = React.useState(true);
+
+  // Simulate initial load for consistency
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 500); // Brief loading to match other dashboards
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleLogout = () => {
     Alert.alert(
@@ -92,10 +102,16 @@ const AdminDashboard: React.FC = () => {
 
           {/* Main Content */}
           <ScrollView flex={1} px={4} py={6}>
-            <VStack space={4}>
-              <Heading size="md" color="purple.800" mb={2}>
-                Welcome, {user?.name || 'Admin'}
-              </Heading>
+            {loading ? (
+              <VStack flex={1} justifyContent="center" alignItems="center" py={20}>
+                <Spinner size="lg" color="purple.600" />
+                <Text color="purple.800" mt={4}>Loading admin screen...</Text>
+              </VStack>
+            ) : (
+              <VStack space={4}>
+                <Heading size="md" color="purple.800" mb={2}>
+                  Welcome, {user?.name || 'Admin'}
+                </Heading>
 
               {/* Dashboard Cards */}
               <VStack space={4}>
@@ -159,7 +175,8 @@ const AdminDashboard: React.FC = () => {
                   </VStack>
                 </Card>
               </VStack>
-            </VStack>
+              </VStack>
+            )}
           </ScrollView>
         </Box>
       </LinearGradient>
