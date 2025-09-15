@@ -1,5 +1,4 @@
 import apiClient from './apiClient';
-
 export interface BroadcastRateBody {
   rate: number;
   purity: '24K' | '22K' | '18K';
@@ -16,6 +15,11 @@ export interface CurrentRateItem {
   rate: number;
   purity: string;
   createdAt: string;
+  wholealer?: { 
+    name: string;
+    id: number;
+    userId: number;
+  };
   wholesalerId: number;
   date: string;
   
@@ -41,3 +45,8 @@ export const fetchRetailers = async (wholesalerId: number): Promise<Retailer[]> 
   return res.data as Retailer[];
 };
 // Remove broadcastGoldRate as it's redundant now
+
+export const fetchCurrentRatesForRetailer = async (): Promise<CurrentRateItem[]> => {
+  const res = await apiClient.get(`api/retailer/getGoldRates`);
+  return res.data as CurrentRateItem[];
+}
