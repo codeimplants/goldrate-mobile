@@ -2,7 +2,7 @@ import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 let socket: Socket | null = null;
-const API_BASE = 'http://192.168.1.105:3000';
+const API_BASE = 'http://192.168.1.103:3000';
 
 export async function connectSocket(): Promise<Socket> {
   const token = await AsyncStorage.getItem('token');

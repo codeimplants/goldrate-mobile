@@ -2,7 +2,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // const API_BASE = 'https://api-broadcast-info.codeimplants.com';
-const API_BASE = 'http://192.168.1.105:3000';
+const API_BASE = 'http://192.168.1.103:3000';
 
 
 const apiClient = axios.create({

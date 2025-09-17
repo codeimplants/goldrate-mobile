@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "658697497871",
+    "project_id": "goldrate-app",
+    "storage_bucket": "goldrate-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:658697497871:android:4197bfc51e7cac370ae27a",
+        "android_client_info": {
+          "package_name": "com.goldrate"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBY_7dbCWUDEH-Y2g4k2HPbZQjyrr1_o9s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
