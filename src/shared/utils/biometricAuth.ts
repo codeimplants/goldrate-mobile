@@ -26,7 +26,7 @@ export async function checkBiometricAuth(): Promise<{ user: any; token: string }
       console.log("🔍 Biometric result:", { success, error });
 
       if (success) {
-        console.log("✅ Biometric auth success");
+        console.log("  Biometric auth success");
         return { user: JSON.parse(storedUser), token };
       } else {
         console.log("❌ Biometric failed:", error || "User canceled or authentication failed");

@@ -53,7 +53,7 @@ const RetailerDashboard: React.FC = () => {
       } catch (error) {
         console.error('Failed to fetch initial rates:', error);
         setGoldRates([
-          { id: '1', type: '24K Gold', rate: 5555, timestamp: new Date().toISOString() },
+          { id: '1', type: '24K Gold', rate: 0, timestamp: new Date().toISOString() },
         ]);
       }
     };
