@@ -1,8 +1,9 @@
 import messaging from '@react-native-firebase/messaging';
 import axios from 'axios';
+// import Config from 'react-native-config';
 import { OneSignal, LogLevel } from 'react-native-onesignal';
-
-const BACKEND_URL = "http://192.168.1.103:3000"; // replace with your backend
+import { API_BASE ,ONESIGNAL_APP_ID} from '../../constant';
+// const API_BASE = Config.API_BASE ;
 
 // Initialize OneSignal
 export const initNotifications = () => {
@@ -10,7 +11,7 @@ export const initNotifications = () => {
   OneSignal.Debug.setLogLevel(LogLevel.Verbose);
 
   // Initialize with your OneSignal App ID
-  OneSignal.initialize("a09e038e-638f-4d66-9946-fff45f453136");
+  OneSignal.initialize(ONESIGNAL_APP_ID);
 
   // Request permission to send notifications
   OneSignal.Notifications.requestPermission(true);
@@ -39,7 +40,7 @@ export const registerDeviceToken = async (retailerId: number, wholesalerId: numb
     console.log("📲 OneSignal Player ID:", playerId);
 
     // Send to backend
-    await axios.post(`${BACKEND_URL}/register-device`, {
+    await axios.post(`${API_BASE}/register-device`, {
       token: playerId, // Use OneSignal playerId
       retailerId,
       wholesalerId,

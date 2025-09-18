@@ -127,13 +127,8 @@ const WholesalerDashboard: React.FC = () => {
       });
       Alert.alert('Success', `Rate broadcasted: ₹${rateNumber}`);
       setNewRate('');
-      // const updatedRates = await fetchCurrentRates();
-      // setGoldRates(updatedRates.map(rate => ({
-      //   id: rate.id || '',
-      //   type: `${rate.purity} Gold`,
-      //   rate: rate.rate,
-      //   timestamp: rate.updatedAt,
-      // })));
+     
+      
     } catch (err) {
       Alert.alert('Error', 'Failed to broadcast rate. Please try again.');
     } finally {
@@ -153,12 +148,12 @@ const WholesalerDashboard: React.FC = () => {
     return `₹${price.toLocaleString()}`;
   };
 
- const formatDateTime = (isoString: string) => {
-  const dateObj = new Date(isoString);
-  const date = dateObj.toLocaleDateString();
-  const time = dateObj.toLocaleTimeString();
-  return `${date} ${time}`;
-};
+  const formatDateTime = (isoString: string) => {
+    const dateObj = new Date(isoString);
+    const date = dateObj.toLocaleDateString();
+    const time = dateObj.toLocaleTimeString();
+    return `${date} ${time}`;
+  };
 
   return (
     <SafeAreaProvider>
@@ -206,66 +201,67 @@ const WholesalerDashboard: React.FC = () => {
 
           {/* Main Content */}
           <ScrollView flex={1} px={4} py={6}>
-            {loading ? (
-              <VStack flex={1} justifyContent="center" alignItems="center">
-                <Spinner size="lg" color="purple.600" />
-                <Text color="purple.800">Loading wholesaler screen...</Text>
-              </VStack>
-            ) : (
-              <VStack space={4}>
-                <Heading size="md" color="purple.800" mb={2}>
-                  Welcome, {user?.name || 'Wholesaler'}
-                </Heading>
 
-                {/* Rate Management */}
-                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                  <VStack space={3}>
-                    <Heading size="sm" color="purple.800">
-                      Update Gold Rates
-                    </Heading>
-                    <VStack space={2}>
-                      <Text fontSize="sm" color="gray.600">
-                        New Rate (₹ per gram)
-                      </Text>
-                      <TextInput
-                        placeholder="Enter new rate"
-                        value={newRate}
-                        onChangeText={(text) => {
-                          const formatted = text.replace(/[^0-9.]/g, '');
-                          const parts = formatted.split('.');
-                          if (parts.length > 2) return;
-                          setNewRate(formatted);
-                        }}
-                        keyboardType="decimal-pad"
-                        style={styles.input}
-                        placeholderTextColor="#718096"
-                      />
-                      <Button
-                        bg="purple.600"
-                        _text={{ color: 'white', fontWeight: 'bold' }}
-                        onPress={handleUpdateRate}
-                        borderRadius="lg"
-                        isDisabled={loading}
-                      >
-                        Update Rate
-                      </Button>
-                    </VStack>
+            <VStack space={4}>
+              <Heading size="md" color="purple.800" mb={2}>
+                Welcome, {user?.name || 'Wholesaler'}
+              </Heading>
+
+              {/* Rate Management */}
+              <Card bg="white" p={4} borderRadius="xl" shadow={2}>
+                <VStack space={3}>
+                  <Heading size="sm" color="purple.800">
+                    Update Gold Rates
+                  </Heading>
+                  <VStack space={2}>
+                    <Text fontSize="sm" color="gray.600">
+                      New Rate (₹ per gram)
+                    </Text>
+                    <TextInput
+                      placeholder="Enter new rate"
+                      value={newRate}
+                      onChangeText={(text) => {
+                        const formatted = text.replace(/[^0-9.]/g, '');
+                        const parts = formatted.split('.');
+                        if (parts.length > 2) return;
+                        setNewRate(formatted);
+                      }}
+                      keyboardType="decimal-pad"
+                      style={styles.input}
+                      placeholderTextColor="#718096"
+                    />
+                    <Button
+                      bg="purple.600"
+                      _text={{ color: 'white', fontWeight: 'bold' }}
+                      onPress={handleUpdateRate}
+                      borderRadius="lg"
+                      isDisabled={loading}
+                    >
+                      Update Rate
+                    </Button>
                   </VStack>
-                </Card>
+                </VStack>
+              </Card>
 
-                {/* Current Rates */}
-                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                  <VStack space={3}>
-                    <HStack justifyContent="space-between" alignItems="center">
-                      <Heading size="sm" color="purple.800">
-                        Current Gold Rates
-                      </Heading>
-                      <Badge colorScheme="green" variant="subtle">
-                        Live
-                      </Badge>
-                    </HStack>
-                    <VStack space={2}>
-                      {goldRates.map((rate, index) => (
+              {/* Current Rates */}
+              <Card bg="white" p={4} borderRadius="xl" shadow={2}>
+                <VStack space={3}>
+                  <HStack justifyContent="space-between" alignItems="center">
+                    <Heading size="sm" color="purple.800">
+                      Current Gold Rates
+                    </Heading>
+                    <Badge colorScheme="green" variant="subtle">
+                      Live
+                    </Badge>
+                  </HStack>
+                  <VStack space={2}>
+                    {loading ? (
+                      <VStack flex={1} justifyContent="center" alignItems="center">
+                        <Spinner size="lg" color="purple.600" />
+                        <Text color="purple.800">Loading rates...</Text>
+                      </VStack>
+                    ) : (
+                        goldRates.slice(0, 5).map((rate, index) => (
                         <Box key={rate.id}>
                           <HStack justifyContent="space-between" alignItems="center" py={2}>
                             <VStack>
@@ -280,26 +276,32 @@ const WholesalerDashboard: React.FC = () => {
                               {formatPrice(rate.rate)}
                             </Text>
                           </HStack>
-                          {index < goldRates.length - 1 && <Divider />}
+                        {index < Math.min(goldRates.length, 5) - 1 && <Divider />}
                         </Box>
-                      ))}
-                    </VStack>
+                      )))}
                   </VStack>
-                </Card>
+                </VStack>
+              </Card>
 
-                {/* Retailer Management */}
-                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                  <VStack space={3}>
-                    <HStack justifyContent="space-between" alignItems="center">
-                      <Heading size="sm" color="purple.800">
-                        My Retailers
-                      </Heading>
-                      <Badge colorScheme="blue" variant="subtle">
-                        {retailers.filter(r => r.status === 'active').length} Active
-                      </Badge>
-                    </HStack>
-                    <VStack space={2}>
-                      {retailers.slice(0, 3).map((retailer, index) => (
+              {/* Retailer Management */}
+              <Card bg="white" p={4} borderRadius="xl" shadow={2}>
+                <VStack space={3}>
+                  <HStack justifyContent="space-between" alignItems="center">
+                    <Heading size="sm" color="purple.800">
+                      My Retailers
+                    </Heading>
+                    <Badge colorScheme="blue" variant="subtle">
+                      {retailers.filter(r => r.status === 'active').length} Active
+                    </Badge>
+                  </HStack>
+                  <VStack space={2}>
+                    {loading ? (
+                      <VStack flex={1} justifyContent="center" alignItems="center">
+                        <Spinner size="lg" color="purple.600" />
+                        <Text color="purple.800">Loading retailers...</Text>
+                      </VStack>
+                    ) : (
+                      retailers.slice(0, 3).map((retailer, index) => (
                         <Box key={retailer.id}>
                           <HStack justifyContent="space-between" alignItems="center" py={2}>
                             <VStack>
@@ -319,57 +321,57 @@ const WholesalerDashboard: React.FC = () => {
                           </HStack>
                           {index < Math.min(retailers.length, 3) - 1 && <Divider />}
                         </Box>
-                      ))}
-                    </VStack>
-                    <Button
-                      variant="outline"
-                      _web={{ borderWidth: 1, borderColor: 'purple.600' }}
-                      _ios={{ borderWidth: 1, borderColor: 'purple.600' }}
-                      _android={{ borderWidth: 1, borderColor: 'purple.600' }}
-                      backgroundColor="transparent"
-                      _text={{ color: 'purple.600', fontWeight: 'bold' }}
-                      onPress={handleManageRetailers}
-                      borderRadius="lg"
-                    >
-                      Manage All Retailers
-                    </Button>
+                      )))}
                   </VStack>
-                </Card>
-
-                {/* Quick Actions */}
-                <VStack space={3}>
-                  <Heading size="sm" color="purple.800">
-                    Quick Actions
-                  </Heading>
-                  <HStack space={3}>
-                    <Button
-                      flex={1}
-                      bg="purple.600"
-                      _text={{ color: 'white', fontWeight: 'bold' }}
-                      onPress={handleManageRetailers}
-                      borderRadius="lg"
-                      py={3}
-                    >
-                      Manage Retailers
-                    </Button>
-                    <Button
-                      flex={1}
-                      variant="outline"
-                      _web={{ borderWidth: 1, borderColor: 'purple.600' }}
-                      _ios={{ borderWidth: 1, borderColor: 'purple.600' }}
-                      _android={{ borderWidth: 1, borderColor: 'purple.600' }}
-                      backgroundColor="transparent"
-                      _text={{ color: 'purple.600', fontWeight: 'bold' }}
-                      onPress={handleViewReports}
-                      borderRadius="lg"
-                      py={3}
-                    >
-                      View Reports
-                    </Button>
-                  </HStack>
+                  <Button
+                    variant="outline"
+                    _web={{ borderWidth: 1, borderColor: 'purple.600' }}
+                    _ios={{ borderWidth: 1, borderColor: 'purple.600' }}
+                    _android={{ borderWidth: 1, borderColor: 'purple.600' }}
+                    backgroundColor="transparent"
+                    _text={{ color: 'purple.600', fontWeight: 'bold' }}
+                    onPress={handleManageRetailers}
+                    borderRadius="lg"
+                  >
+                    Manage All Retailers
+                  </Button>
                 </VStack>
+              </Card>
+
+              {/* Quick Actions */}
+              <VStack space={3}>
+                <Heading size="sm" color="purple.800">
+                  Quick Actions
+                </Heading>
+                <HStack space={3}>
+                  <Button
+                    flex={1}
+                    bg="purple.600"
+                    _text={{ color: 'white', fontWeight: 'bold' }}
+                    onPress={handleManageRetailers}
+                    borderRadius="lg"
+                    py={3}
+                  >
+                    Manage Retailers
+                  </Button>
+                  <Button
+                    flex={1}
+                    variant="outline"
+                    _web={{ borderWidth: 1, borderColor: 'purple.600' }}
+                    _ios={{ borderWidth: 1, borderColor: 'purple.600' }}
+                    _android={{ borderWidth: 1, borderColor: 'purple.600' }}
+                    backgroundColor="transparent"
+                    _text={{ color: 'purple.600', fontWeight: 'bold' }}
+                    onPress={handleViewReports}
+                    borderRadius="lg"
+                    py={3}
+                  >
+                    View Reports
+                  </Button>
+                </HStack>
               </VStack>
-            )}
+            </VStack>
+
           </ScrollView>
         </Box>
       </LinearGradient>

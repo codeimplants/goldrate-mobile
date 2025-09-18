@@ -1,8 +1,11 @@
 import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+// import Config from 'react-native-config';
+import { API_BASE } from '../../constant';
+
 
 let socket: Socket | null = null;
-const API_BASE = 'http://192.168.1.103:3000';
+// const API_BASE = Config.API_BASE;
 
 export async function connectSocket(): Promise<Socket> {
   const token = await AsyncStorage.getItem('token');
@@ -10,11 +13,11 @@ export async function connectSocket(): Promise<Socket> {
   if (!socket) {
     socket = io(API_BASE, {
       transports: ['websocket'],
-      auth: { token: token || '' },   // ✅ backend expects auth.token
+      auth: { token: token || '' },   //   backend expects auth.token
     });
 
     socket.on('connect', () => {
-      console.log('✅ RN Socket connected! ID:', socket?.id);
+      console.log(' RN Socket connected! ID:', socket?.id);
     });
 
     socket.on('connect_error', (err) => {
@@ -27,7 +30,7 @@ export async function connectSocket(): Promise<Socket> {
 
     (globalThis as any).__socket = socket;
   } else {
-    socket.auth = { token: token || '' } as any;  // ✅ update token dynamically
+    socket.auth = { token: token || '' } as any;  //   update token dynamically
     if (!socket.connected) socket.connect();
   }
 

@@ -112,7 +112,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch (error) {
         console.error('Error loading user:', error);
       } finally {
-        // ✅ At this point, either logged in or not, role is settled
+        //   At this point, either logged in or not, role is settled
         setLoadingAuth(false);
       }
     };
