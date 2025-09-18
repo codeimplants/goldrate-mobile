@@ -3,29 +3,52 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 // Pages
 import Dashboard from '../pages/Dashboard/Dashboard';
+import AdminDashboard from '../pages/AdminDashboard/AdminDashboard';
+import RetailerDashboard from '../pages/RetailerDashboard/RetailerDashboard';
+import WholesalerDashboard from '../pages/WholesalerDashboard/WholesalerDashboard';
+import ManageUsers from '../pages/admin/ManageUsers/ManageUsers';
+import CreateUserForm from '../pages/admin/CreateUserForm/CreateUserForm';
+import RoleUserList from '../pages/admin/RoleUserList/RoleUserList';
 
 // Navigation
-import { NavigationStackParamList } from './Types/types';
+import { AppStackParamList } from './Types/types';
 
 // Custom hooks
 import { useAuth } from '../feature/auth/hooks/useAuth';
 
-const Stack = createNativeStackNavigator<NavigationStackParamList>();
+const Stack = createNativeStackNavigator<AppStackParamList>();
 
-const AuthNavigation: React.FC = () => {
-  const { isAuthenticated } = useAuth();
+const AppNavigation: React.FC = () => {
+  const { role } = useAuth();
+
+  const getInitialRoute = () => {
+    switch (role?.toUpperCase()) {
+      case 'ADMIN':
+        return 'adminDashboard';
+      case 'RETAILER':
+        return 'retailerDashboard';
+      case 'WHOLESALER':
+        return 'wholesalerDashboard';
+      default:
+        return 'adminDashboard';
+    }
+  };
 
   return (
     <Stack.Navigator
-      initialRouteName={isAuthenticated ? 'dashboard' : 'login'}
+      initialRouteName={getInitialRoute()}
       screenOptions={{
         headerShown: false,
       }}
     >
-      {/* Dashboard */}
-      <Stack.Screen name="dashboard" component={Dashboard} />
+      <Stack.Screen name="adminDashboard" component={AdminDashboard} />
+      <Stack.Screen name="retailerDashboard" component={RetailerDashboard} />
+      <Stack.Screen name="wholesalerDashboard" component={WholesalerDashboard} />
+      <Stack.Screen name="manageUsers" component={ManageUsers} />
+      <Stack.Screen name="createUser" component={CreateUserForm} />
+      <Stack.Screen name="roleUserList" component={RoleUserList} />
     </Stack.Navigator>
   );
 };
 
-export default AuthNavigation;
+export default AppNavigation;

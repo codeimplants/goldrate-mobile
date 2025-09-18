@@ -4,10 +4,12 @@ import { NavigationContainer } from '@react-navigation/native';
 import { NativeBaseProvider } from 'native-base';  // 👈 import this
 import ContextProvider from './src/context/ContextProvider';
 import Navigation from './src/navigation/Navigation';
+import ErrorBoundary from './src/Error/ErrorBoundary';
 
 export default function App() {
   return (
     <NativeBaseProvider>   {/* 👈 wrap your entire app */}
+     <ErrorBoundary>
       <ContextProvider>
         <NavigationContainer>
           <StatusBar
@@ -18,6 +20,7 @@ export default function App() {
           <Navigation />
         </NavigationContainer>
       </ContextProvider>
+      </ErrorBoundary>
     </NativeBaseProvider>
   );
 }
