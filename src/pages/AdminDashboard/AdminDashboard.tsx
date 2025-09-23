@@ -48,7 +48,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleManageUsers = () => {
-    navigation.navigate('manageUsers' as never);
+    Alert.alert('Manage Users', 'Loading user management system...');
   };
 
   const handleViewReports = () => {

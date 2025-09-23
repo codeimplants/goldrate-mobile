@@ -11,15 +11,15 @@ import {
   saveLoginSession,
   checkBiometricAuth,
 } from '../../../shared/utils/biometricAuth';
+import { clearDeviceToken, registerDeviceToken } from '../../../shared/services/notificationService';
+import { OneSignal } from 'react-native-onesignal';
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
   const [otpSent, setOtpSent] = useState<boolean>(false);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [loadingApi, setLoadingApi] = useState<boolean>(false); // API calls
-  const [loadingAuth, setLoadingAuth] = useState<boolean>(true); // Initial auth check
+  const [loadingApi, setLoadingApi] = useState<boolean>(false);
+  const [loadingAuth, setLoadingAuth] = useState<boolean>(true);
   const [user, setUser] = useState<any>(null);
   const [role, setRole] = useState<string | null>(null);
 
@@ -49,31 +49,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
     try {
       setLoadingApi(true);
-      const response: VerifiedUserResponse | null = await verifyOtpFromPhone(
-        phoneNumber,
-        otp,
-      );
+      const response: VerifiedUserResponse | null = await verifyOtpFromPhone(phoneNumber, otp);
 
       if (response?.token) {
-        // Save in AsyncStorage (normal login session)
+        // Save in AsyncStorage
         await AsyncStorage.setItem('user', JSON.stringify(response.user));
         await AsyncStorage.setItem('token', response.token);
         await AsyncStorage.setItem('role', response.user.role);
         await AsyncStorage.setItem('userId', response.user.id.toString());
         if (response.user.wholesalerId) {
-          await AsyncStorage.setItem(
-            'wholesalerId',
-            response.user.wholesalerId.toString(),
-          );
+          await AsyncStorage.setItem('wholesalerId', response.user.wholesalerId.toString());
         }
 
-        // Save in EncryptedStorage (for biometrics next time)
+        // Save in EncryptedStorage (for biometrics)
         await saveLoginSession(response.token, response.user);
 
         // Update state
         setUser(response.user);
         setRole(response.user.role);
         setIsAuthenticated(true);
+
+        // 🔹 Register device token after login
+        try {
+          await registerDeviceToken(Number(response.user.id));
+          console.log('Device token registered after OTP verification');
+        } catch (err) {
+          console.error('Failed to register device token:', err);
+        }
+
         return response;
       }
       return undefined;
@@ -85,17 +88,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // 🔹 Load user on mount (biometric → fallback to storage)
+  // 🔹 Load user on mount
   useEffect(() => {
     const loadUser = async () => {
       try {
-        // Try biometric login first
+        // Try biometric login
         const biometricData = await checkBiometricAuth();
         if (biometricData) {
           const { user, token } = biometricData;
           setUser(user);
           setRole(user.role);
           setIsAuthenticated(true);
+
+          // Optionally re-register token here if needed
+          try {
+            await registerDeviceToken(user.id);
+            console.log('Device token re-registered after biometric login');
+          } catch (err) {
+            console.error('Failed to re-register device token:', err);
+          }
+
           return;
         }
 
@@ -105,14 +117,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         const storedRole = await AsyncStorage.getItem('role');
 
         if (storedUser && storedToken && storedRole) {
-          setUser(JSON.parse(storedUser));
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
           setRole(storedRole);
           setIsAuthenticated(true);
+
+          try {
+            await registerDeviceToken(parsedUser.id);
+          } catch (err) {
+            console.error('Failed to re-register device token:', err);
+          }
         }
       } catch (error) {
         console.error('Error loading user:', error);
       } finally {
-        //   At this point, either logged in or not, role is settled
         setLoadingAuth(false);
       }
     };
@@ -123,14 +141,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // 🔹 Logout
   const logout = async () => {
     try {
-      await AsyncStorage.multiRemove([
-        'user',
-        'token',
-        'role',
-        'userId',
-        'wholesalerId',
-      ]);
-      await EncryptedStorage.clear(); // clear biometrics too
+      if (user?.id) {
+        await clearDeviceToken(user.id);
+        console.log('Device token cleared on logout');
+      }
+
+      await AsyncStorage.multiRemove(['user', 'token', 'role', 'userId', 'wholesalerId']);
+      await EncryptedStorage.clear();
+
       setUser(null);
       setRole(null);
       setIsAuthenticated(false);

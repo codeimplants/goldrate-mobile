@@ -2,6 +2,7 @@ import { createContext } from 'react';
 import { RequestOtpResponse, VerifiedUserResponse } from '../services/authservices';
 
 export interface AuthContextInterface {
+  id?: number;
   user: any;
   role: string | null;
   otpSent: boolean;
