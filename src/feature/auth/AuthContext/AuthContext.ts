@@ -1,6 +1,6 @@
 import { createContext } from 'react';
 import { RequestOtpResponse, VerifiedUserResponse } from '../services/authservices';
-
+import { RequestOtpResult } from '../services/authservices';
 export interface AuthContextInterface {
   id?: number;
   user: any;
@@ -11,8 +11,8 @@ export interface AuthContextInterface {
   loadingAuth: boolean;
   phoneNumber: string | null;
 
-  // Api calls
-  requestOtp: (phone: string) => Promise<RequestOtpResponse | undefined>;
+    // Api calls
+  requestOtp: (phone: string, force?: boolean) => Promise<RequestOtpResult | undefined>;
   verifyOtp: (otp: string) => Promise<VerifiedUserResponse | undefined>;
   logout: () => void;
 }

@@ -36,6 +36,33 @@ const Login: React.FC = () => {
       try {
         setLoading(true);
         const response = await requestOtp(values.phone);
+
+
+if (response && "conflict" in response) {
+  Alert.alert(
+    "Already Logged In",
+    response.message,
+    [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Logout & Continue",
+        onPress: async () => {
+          const forceResp = await requestOtp(values.phone, true);
+          if (forceResp && "success" in forceResp) {
+            Alert.alert("OTP Sent", `OTP: ${forceResp.info?.otp || "Check your phone"}`);
+            navigation.navigate("otp" as never);
+          }
+        },
+      },
+    ],
+    { cancelable: true }
+  );
+  return;
+}
+
+
+
+
         if (response) {
           Alert.alert('OTP Sent', `OTP: ${response.info?.otp || 'Check your phone'}`);
           navigation.navigate('otp' as never);
@@ -172,4 +199,3 @@ const Style = StyleSheet.create({
 });
 
 export default Login;
-9112816968;
