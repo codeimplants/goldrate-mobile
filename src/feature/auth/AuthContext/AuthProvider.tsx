@@ -26,6 +26,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [loadingAuth, setLoadingAuth] = useState<boolean>(true);
   const [user, setUser] = useState<any>(null);
   const [role, setRole] = useState<string | null>(null);
+const [hasLoggedOut, setHasLoggedOut] = useState(false);
+const [biometricFailed, setBiometricFailed] = useState(false);
+const [biometricLoading, setBiometricLoading] = useState(false);
+
+
 
   // 🔹 Request OTP
   const requestOtp = async (
@@ -109,54 +114,58 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // 🔹 Load user on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      try {
-        // Try biometric login
+useEffect(() => {
+  const loadUser = async () => {
+    try {
+      // 🔹 Only try biometrics if explicitly enabled
+      const biometricEnabled = await EncryptedStorage.getItem("biometricEnabled");
+
+      if (biometricEnabled === "true") {
         const biometricData = await checkBiometricAuth();
         if (biometricData) {
-          const { user, token } = biometricData;
+          const { user } = biometricData;
           setUser(user);
           setRole(user.role);
           setIsAuthenticated(true);
-
-          // Optionally re-register token here if needed
-          try {
-            await registerDeviceToken(user.id);
-            console.log('Device token re-registered after biometric login');
-          } catch (err) {
-            console.error('Failed to re-register device token:', err);
-          }
-
+          setBiometricFailed(false); // reset
+          try { await registerDeviceToken(user.id); } catch(e){}
+          setLoadingAuth(false);
           return;
         }
-
-        // Fallback to AsyncStorage
-        const storedUser = await AsyncStorage.getItem('user');
-        const storedToken = await AsyncStorage.getItem('token');
-        const storedRole = await AsyncStorage.getItem('role');
-
-        if (storedUser && storedToken && storedRole) {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          setRole(storedRole);
-          setIsAuthenticated(true);
-
-          try {
-            await registerDeviceToken(parsedUser.id);
-          } catch (err) {
-            console.error('Failed to re-register device token:', err);
-          }
-        }
-      } catch (error) {
-        console.error('Error loading user:', error);
-      } finally {
+        // user cancelled → show retry screen
+        setIsAuthenticated(false);
+         setBiometricFailed(true);
         setLoadingAuth(false);
+        return;
       }
-    };
 
-    loadUser();
-  }, []);
+      // 🔹 Fallback to AsyncStorage if biometrics not enabled
+      const storedUser = await AsyncStorage.getItem('user');
+      const storedToken = await AsyncStorage.getItem('token');
+      const storedRole = await AsyncStorage.getItem('role');
+
+      if (storedUser && storedToken && storedRole) {
+        const parsedUser = JSON.parse(storedUser);
+        setUser(parsedUser);
+        setRole(storedRole);
+        setIsAuthenticated(true);
+        try { await registerDeviceToken(parsedUser.id); } catch(e){}
+      } else {
+        // No session → user must login
+        setIsAuthenticated(false);
+      }
+
+    } catch (error) {
+      console.error('Error loading user:', error);
+      setIsAuthenticated(false);
+    } finally {
+      setLoadingAuth(false);
+    }
+  };
+
+  loadUser();
+}, []);
+
 
   // 🔹 Logout
   const logout = async () => {
@@ -174,14 +183,55 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         'wholesalerId',
       ]);
       await EncryptedStorage.clear();
+      await EncryptedStorage.removeItem("biometricEnabled");
 
       setUser(null);
       setRole(null);
       setIsAuthenticated(false);
+      setHasLoggedOut(true);
+
     } catch (error) {
       console.error('Error logging out:', error);
     }
   };
+
+ const loginWithBiometric = async (): Promise<boolean> => {
+  setBiometricLoading(true);
+  try {
+    const biometricData = await checkBiometricAuth();
+    if (!biometricData) {
+      setBiometricFailed(true);
+      return false;
+    }
+
+    setBiometricFailed(false);
+    const { user, token } = biometricData;
+
+    await AsyncStorage.setItem("user", JSON.stringify(user));
+    await AsyncStorage.setItem("token", token);
+    await AsyncStorage.setItem("role", user.role);
+    await AsyncStorage.setItem("userId", user.id.toString());
+    if (user.wholesalerId) {
+      await AsyncStorage.setItem("wholesalerId", user.wholesalerId.toString());
+    }
+    await saveLoginSession(token, user);
+
+    setUser(user);
+    setRole(user.role);
+    setIsAuthenticated(true);
+
+    try {
+      await registerDeviceToken(user.id);
+    } catch (err) {
+      console.error("Failed to register device token:", err);
+    }
+
+    return true;
+  } finally {
+    setBiometricLoading(false);
+  }
+};
+
 
   return (
     <AuthContext.Provider
@@ -193,9 +243,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isAuthenticated,
         loadingApi,
         loadingAuth,
+        hasLoggedOut,
+        biometricFailed,
+        biometricLoading,
         requestOtp,
         verifyOtp,
         logout,
+        loginWithBiometric,
       }}
     >
       {children}

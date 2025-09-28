@@ -1,187 +1,122 @@
-import React from 'react';
+// src/pages/AdminDashboard/AdminDashboard.tsx
+import React from "react";
 import {
-  Box,
-  Button,
-  Heading,
-  VStack,
-  HStack,
+  View,
   Text,
+  TouchableOpacity,
   ScrollView,
-  Card,
-  Spinner,
-} from 'native-base';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
-import { useAuth } from '../../feature/auth/hooks/useAuth';
-import { useNavigation } from '@react-navigation/native';
-import { Alert } from 'react-native';
+  StyleSheet,
+  Alert,
+} from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import { useAuth } from "../../feature/auth/hooks/useAuth";
 
-//adminDashboard
 const AdminDashboard: React.FC = () => {
   const { logout, user } = useAuth();
   const navigation = useNavigation();
-  const [loading, setLoading] = React.useState(true);
-
-  // Simulate initial load for consistency
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setLoading(false);
-    }, 500); // Brief loading to match other dashboards
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Logout',
-          style: 'destructive',
-          onPress: () => {
-            logout();
-          },
-        },
-      ]
-    );
-  };
-
-  const handleManageUsers = () => {
-    Alert.alert('Manage Users', 'Loading user management system...');
-  };
-
-  const handleViewReports = () => {
-    Alert.alert('System Reports', 'Loading system reports and analytics...');
-  };
-
-  const handleManagePenalties = () => {
-    Alert.alert('Penalty Management', 'Opening penalty management system...');
+    Alert.alert("Logout", "Are you sure?", [
+      { text: "Cancel", style: "cancel" },
+      { text: "Logout", onPress: logout },
+    ]);
   };
 
   return (
-    <SafeAreaProvider>
-      <LinearGradient
-        colors={['#f3e8ff', '#fdf2f8']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{ flex: 1 }}
-      >
-        <Box flex={1}>
-          {/* Header */}
-          <LinearGradient
-            colors={['#a855f7', '#ec4899']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              paddingTop: 50,
-              paddingBottom: 20,
-              paddingHorizontal: 20,
-            }}
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.title}>Gold Rate Broadcast | Admin</Text>
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Main Content */}
+      <ScrollView contentContainerStyle={styles.content}>
+        <Text style={styles.sectionTitle}>
+          Welcome, {user?.name || "Admin"}
+        </Text>
+
+        {/* User Management */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>User Management</Text>
+          <Text style={styles.cardDesc}>
+            Approve new wholesalers and manage existing ones.
+          </Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("manageUsers" as never)}
           >
-            <HStack justifyContent="space-between" alignItems="center">
-              <VStack>
-                <Heading size="lg" color="white">
-                  Gold Rate Broadcast
-                </Heading>
-                <Text color="white" fontSize="sm">
-                  Admin Dashboard
-                </Text>
-              </VStack>
-              <Button
-                variant="outline"
-                borderColor="white"
-                _text={{ color: 'white' }}
-                onPress={handleLogout}
-                size="sm"
-              >
-                Logout
-              </Button>
-            </HStack>
-          </LinearGradient>
+            <Text style={styles.buttonText}>Manage Users</Text>
+          </TouchableOpacity>
+        </View>
 
-          {/* Main Content */}
-          <ScrollView flex={1} px={4} py={6}>
-            {loading ? (
-              <VStack flex={1} justifyContent="center" alignItems="center" py={20}>
-                <Spinner size="lg" color="purple.600" />
-                <Text color="purple.800" mt={4}>Loading admin screen...</Text>
-              </VStack>
-            ) : (
-              <VStack space={4}>
-                <Heading size="md" color="purple.800" mb={2}>
-                  Welcome, {user?.name || 'Admin'}
-                </Heading>
+        {/* Reports */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>System Reports</Text>
+          <Text style={styles.cardDesc}>
+            View system-wide reports and analytics.
+          </Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => Alert.alert("Reports", "Loading reports...")}
+          >
+            <Text style={styles.buttonText}>View Reports</Text>
+          </TouchableOpacity>
+        </View>
 
-              {/* Dashboard Cards */}
-              <VStack space={4}>
-                {/* User Management Card */}
-                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                  <VStack space={3}>
-                    <Heading size="sm" color="purple.800">
-                      User Management
-                    </Heading>
-                    <Text color="gray.600" fontSize="sm">
-                      Approve new wholesalers and manage existing ones.
-                    </Text>
-                    <Button
-                      bg="purple.600"
-                      _text={{ color: 'white', fontWeight: 'bold' }}
-                      onPress={handleManageUsers}
-                      borderRadius="lg"
-                    >
-                      Manage Users
-                    </Button>
-                  </VStack>
-                </Card>
-
-                {/* System Reports Card */}
-                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                  <VStack space={3}>
-                    <Heading size="sm" color="purple.800">
-                      System Reports
-                    </Heading>
-                    <Text color="gray.600" fontSize="sm">
-                      View system-wide reports and analytics.
-                    </Text>
-                    <Button
-                      bg="purple.600"
-                      _text={{ color: 'white', fontWeight: 'bold' }}
-                      onPress={handleViewReports}
-                      borderRadius="lg"
-                    >
-                      View Reports
-                    </Button>
-                  </VStack>
-                </Card>
-
-                {/* Penalty Management Card */}
-                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                  <VStack space={3}>
-                    <Heading size="sm" color="purple.800">
-                      Penalty Management
-                    </Heading>
-                    <Text color="gray.600" fontSize="sm">
-                      Review and waive penalties for retailers.
-                    </Text>
-                    <Button
-                      bg="purple.600"
-                      _text={{ color: 'white', fontWeight: 'bold' }}
-                      onPress={handleManagePenalties}
-                      borderRadius="lg"
-                    >
-                      Manage Penalties
-                    </Button>
-                  </VStack>
-                </Card>
-              </VStack>
-              </VStack>
-            )}
-          </ScrollView>
-        </Box>
-      </LinearGradient>
-    </SafeAreaProvider>
+        {/* Penalties */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Penalty Management</Text>
+          <Text style={styles.cardDesc}>
+            Review and waive penalties for retailers.
+          </Text>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => Alert.alert("Penalties", "Opening penalties...")}
+          >
+            <Text style={styles.buttonText}>Manage Penalties</Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </View>
   );
 };
 
 export default AdminDashboard;
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: "#fdf2f8" },
+  header: {
+    backgroundColor: "#a855f7",
+    padding: 16,
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  title: { fontSize: 18, fontWeight: "bold", color: "#fff" },
+  logoutBtn: { padding: 8 },
+  logoutText: { color: "#fff", fontWeight: "bold" },
+  content: { padding: 16 },
+  sectionTitle: { fontSize: 20, fontWeight: "bold", color: "#6b21a8" },
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 16,
+    marginTop: 16,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  cardTitle: { fontSize: 16, fontWeight: "bold", color: "#6b21a8" },
+  cardDesc: { fontSize: 14, color: "#4b5563", marginVertical: 8 },
+  button: {
+    backgroundColor: "#a855f7",
+    padding: 10,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  buttonText: { color: "#fff", fontWeight: "bold" },
+});
