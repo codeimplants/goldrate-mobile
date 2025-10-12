@@ -121,26 +121,26 @@ useEffect(() => {
   const loadUser = async () => {
     try {
       // 🔹 Only try biometrics if explicitly enabled
-      const biometricEnabled = await EncryptedStorage.getItem("biometricEnabled");
+      // const biometricEnabled = await EncryptedStorage.getItem("biometricEnabled");
 
-      if (biometricEnabled === "true") {
-        const biometricData = await checkBiometricAuth();
-        if (biometricData) {
-          const { user } = biometricData;
-          setUser(user);
-          setRole(user.role);
-          setIsAuthenticated(true);
-          setBiometricFailed(false); // reset
-          try { await registerDeviceToken(user.id); } catch(e){}
-          setLoadingAuth(false);
-          return;
-        }
-        // user cancelled → show retry screen
-        setIsAuthenticated(false);
-         setBiometricFailed(true);
-        setLoadingAuth(false);
-        return;
-      }
+      // if (biometricEnabled === "true") {
+      //   const biometricData = await checkBiometricAuth();
+      //   if (biometricData) {
+      //     const { user } = biometricData;
+      //     setUser(user);
+      //     setRole(user.role);
+      //     setIsAuthenticated(true);
+      //     setBiometricFailed(false); // reset
+      //     try { await registerDeviceToken(user.id); } catch(e){}
+      //     setLoadingAuth(false);
+      //     return;
+      //   }
+      //   // user cancelled → show retry screen
+      //   setIsAuthenticated(false);
+      //    setBiometricFailed(true);
+      //   setLoadingAuth(false);
+      //   return;
+      // }
 
       // 🔹 Fallback to AsyncStorage if biometrics not enabled
       const storedUser = await AsyncStorage.getItem('user');
