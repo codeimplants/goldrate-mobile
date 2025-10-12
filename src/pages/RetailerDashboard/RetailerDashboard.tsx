@@ -37,35 +37,37 @@ const RetailerDashboard: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [initialLoad, setInitialLoad] = useState<boolean>(true);
   const [showAllRates, setShowAllRates] = useState<boolean>(false);
-
   // Fetch initial rates
   useEffect(() => {
     const loadInitialRates = async () => {
       try {
+        setLoading(true);
         const rates = await fetchCurrentRatesForRetailer();
         const mappedRates = rates.map((rate: any) => ({
           id: rate.id || '',
           type: `${rate.purity} Gold`,
           rate: rate.rate,
-          timestamp: rate.date,        }));
+          timestamp: rate.date,
+        }));
         // console.log('Initial rates fetched:', mappedRates);
-        setGoldRates(mappedRates);} catch (error) {
+        setGoldRates(mappedRates);
+      } catch (error) {
         console.error('Failed to fetch initial rates:', error);
         setGoldRates([]);
+      } finally {
+        setLoading(false);
       }
     };
     loadInitialRates();
   }, [user?.wholesalerId]);
 
 
-  
-  // Set up WebSocket connection
+    // Set up WebSocket connection
 useEffect(() => {
   let isActive = true;
   let socket: any = null;
 
   (async () => {
-    setLoading(true);
     console.log('User data:', user);
 
     try {
@@ -84,10 +86,8 @@ useEffect(() => {
         setGoldRates(prev => [item, ...prev]);
       });
 
-      setLoading(false);
     } catch (error) {
       console.error('WebSocket setup error:', error);
-      setLoading(false);
     }
   })();
 
@@ -207,8 +207,15 @@ useEffect(() => {
                       <Badge colorScheme="green" variant="subtle">
                         Live
                       </Badge>
-                    </HStack><VStack space={2}>
-                      {goldRates.length > 0 ? (
+                    </HStack>                    <VStack space={2}>
+                      {loading ? (
+                        <VStack justifyContent="center" alignItems="center" py={4}>
+                          <Spinner size="sm" color="purple.600" />
+                          <Text color="gray.500" fontSize="sm" textAlign="center" mt={2}>
+                            Fetching latest gold rates...
+                          </Text>
+                        </VStack>
+                      ) : goldRates.length > 0 ? (
                         (showAllRates ? goldRates : goldRates.slice(0, 3)).map((rate, index, array) => (
                           <Box key={rate.id}>
                             <HStack justifyContent="space-between" alignItems="center" py={2}>
@@ -225,7 +232,8 @@ useEffect(() => {
                               </Text>
                             </HStack>
                             {index < array.length - 1 && <Divider />}
-                          </Box>                        ))
+                          </Box>
+                        ))
                       ) : (
                         <VStack
                           flex={1}
