@@ -25,50 +25,53 @@ const Login: React.FC = () => {
   const navigation = useNavigation();
 
   const formik = useFormik({
-    initialValues: { phone: '' },
-    validationSchema: Yup.object({
+    initialValues: { phone: '' },    validationSchema: Yup.object({
       phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^\d{10}$/, 'Phone Number should be exactly 10 digits.'),
-    }),
-    onSubmit: async values => {
+    }),onSubmit: async values => {
       setError(null);
       try {
         setLoading(true);
         const response = await requestOtp(values.phone);
 
-
-if (response && "conflict" in response) {
-  Alert.alert(
-    "Already Logged In",
-    response.message,
-    [
-      { text: "Cancel", style: "cancel" },
-      {
-        text: "Logout & Continue",
-        onPress: async () => {
-          const forceResp = await requestOtp(values.phone, true);
-          if (forceResp && "success" in forceResp) {
-            Alert.alert("OTP Sent", `OTP: ${forceResp.info?.otp || "Check your phone"}`);
-            navigation.navigate("otp" as never);
-          }
-        },
-      },
-    ],
-    { cancelable: true }
-  );
-  return;
-}
-
-
-
+        if (response && "conflict" in response) {
+          Alert.alert(
+            "Already Logged In",
+            response.message,
+            [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Logout & Continue",
+                onPress: async () => {
+                  const forceResp = await requestOtp(values.phone, true);
+                  if (forceResp && "success" in forceResp) {
+                    Alert.alert("OTP Sent", `OTP: ${forceResp.info?.otp || "Check your phone"}`);
+                    navigation.navigate("otp" as never);
+                  }
+                },
+              },
+            ],
+            { cancelable: true }
+          );
+          return;
+        }
 
         if (response) {
           Alert.alert('OTP Sent', `OTP: ${response.info?.otp || 'Check your phone'}`);
           navigation.navigate('otp' as never);
+        }      } catch (err: any) {
+        // Check if it's a 404 error (user not found)
+        if (err.response?.status === 404) {
+          const serverMessage = err.response?.data?.message || 'User not found. Please contact your Admin or Wholesaler to be added.';
+          Alert.alert("User Not Found", serverMessage);
+        } else if (err.response?.status === 429) {
+          // Rate limit error
+          const serverMessage = err.response?.data?.message || 'Too many OTP requests. Please try again later.';
+          Alert.alert("Too Many Requests", serverMessage);
+        } else {
+          setError('Failed to send OTP. Please try again.');
         }
-      } catch (err) {
-        setError('Failed to send OTP. Please try again.');
       } finally {
         setLoading(false);
       }

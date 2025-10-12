@@ -3,7 +3,6 @@ import AppNavigation from './AppNavigation';
 import { useAuth } from '../feature/auth/hooks/useAuth';
 import React from 'react';
 import SplashScreen from '../pages/Splash/SplashScreen';
-import BiometricGate from '../components/BiometricGate';
 import BiometricRetry from '../components/BiometricRetry';
 
 const Navigation: React.FC = () => {

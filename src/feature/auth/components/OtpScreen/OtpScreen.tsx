@@ -24,7 +24,7 @@ const OtpScreen: React.FC = () => {
 
   const { verifyOtp, requestOtp, phoneNumber } = useAuth();
   const navigation = useNavigation();
-  const otpRefs = Array.from({ length: 4 }).map(() => useRef<TextInput>(null));
+  const otpRefs = Array.from({ length: 6 }).map(() => useRef<TextInput>(null));
 
   useEffect(() => {
     // Start cooldown timer
@@ -40,33 +40,71 @@ const OtpScreen: React.FC = () => {
     }, 1000);
 
     return () => clearInterval(interval);
-  }, []);
-
- const handleOtpChange = (text: string, index: number) => {
-  const newOtp = otp.split('');
-  
-  if (text.length === 1) {
-    // A digit was entered
-    newOtp[index] = text;
-    // Auto-focus the next input field
-    if (index < otpRefs.length - 1) {
-      otpRefs[index + 1].current?.focus();
+  }, []);  const handleOtpChange = (text: string, index: number) => {
+    const newOtp = otp.split('');
+    
+    // Handle pasted content (multiple digits)
+    if (text.length > 1) {
+      const pastedDigits = text.replace(/\D/g, '').slice(0, 6); // Remove non-digits and limit to 6
+      const newFullOtp = Array(6).fill('');
+      
+      for (let i = 0; i < pastedDigits.length; i++) {
+        if (index + i < 6) {
+          newFullOtp[index + i] = pastedDigits[i];
+        }
+      }
+      
+      setOtp(newFullOtp.join(''));
+      
+      // Focus the next empty field or the last field
+      const nextIndex = Math.min(index + pastedDigits.length, 5);
+      otpRefs[nextIndex].current?.focus();
+      return;
     }
-  } else if (text.length === 0) {
-    // The current input was cleared, likely by a backspace
-    newOtp[index] = '';
-    // Auto-focus the previous input field
-    if (index > 0) {
-      otpRefs[index - 1].current?.focus();
+    
+    if (text.length === 1 && /^\d$/.test(text)) {
+      // A digit was entered
+      newOtp[index] = text;
+      // Auto-focus the next input field
+      if (index < otpRefs.length - 1) {
+        otpRefs[index + 1].current?.focus();
+      }
+    } else if (text.length === 0) {
+      // The current input was cleared (backspace)
+      newOtp[index] = '';
     }
-  }
-  
-  setOtp(newOtp.join(''));
-};
+    
+    setOtp(newOtp.join(''));
+  };
+  const handleKeyPress = (event: any, index: number) => {
+    if (event.nativeEvent.key === 'Backspace') {
+      const newOtp = otp.split('');
+      
+      if (newOtp[index]) {
+        // If current field has content, clear it
+        newOtp[index] = '';
+        setOtp(newOtp.join(''));
+      } else if (index > 0) {
+        // If current field is empty, move to previous field and clear it
+        newOtp[index - 1] = '';
+        setOtp(newOtp.join(''));
+        otpRefs[index - 1].current?.focus();
+      }
+    }
+  };
 
+  const handleFocus = (index: number) => {
+    // If user taps on an empty field, focus on the first empty field instead
+    const currentOtp = otp.split('');
+    const firstEmptyIndex = currentOtp.findIndex(digit => !digit);
+    
+    if (firstEmptyIndex !== -1 && firstEmptyIndex < index) {
+      otpRefs[firstEmptyIndex].current?.focus();
+    }
+  };
   const handleVerifyOtp = async () => {
-    if (otp.length !== 4) {
-      setError('Please enter a valid 4-digit OTP');
+    if (otp.length !== 6) {
+      setError('Please enter a valid 6-digit OTP');
       return;
     }
 
@@ -141,9 +179,8 @@ const OtpScreen: React.FC = () => {
               <Box>
                 <Heading size="xl" textAlign="center" color="purple.600">
                   Verify OTP
-                </Heading>
-                <Text fontSize="md" color="#8d5bbd" textAlign="center" mt={2}>
-                  Enter the 4-digit code sent to {phoneNumber}
+                </Heading>                <Text fontSize="md" color="#8d5bbd" textAlign="center" mt={2}>
+                  Enter the 6-digit code sent to {phoneNumber}
                 </Text>
               </Box>
             </LinearGradient>
@@ -153,9 +190,8 @@ const OtpScreen: React.FC = () => {
               <FormControl isInvalid={!!error}>
                 <Text fontSize="md" color="#7d36a0" mb={3}>
                   Verification Code
-                </Text>
-                <HStack space={3} justifyContent="center">
-                  {Array.from({ length: 4 }).map((_, i) => (
+                </Text>                <HStack space={2} justifyContent="center">
+                  {Array.from({ length: 6 }).map((_, i) => (
                     <TextInput
                       key={i}
                       ref={otpRefs[i]}
@@ -163,7 +199,10 @@ const OtpScreen: React.FC = () => {
                       keyboardType="number-pad"
                       value={otp[i] || ''}
                       onChangeText={text => handleOtpChange(text, i)}
+                      onKeyPress={event => handleKeyPress(event, i)}
+                      onFocus={() => handleFocus(i)}
                       style={styles.otpInput}
+                      selectTextOnFocus={true}
                     />
                   ))}
                 </HStack>
@@ -240,14 +279,13 @@ const styles = StyleSheet.create({
     borderRadius: 7,
     width: '100%',
     marginTop: 24,
-  },
-  otpInput: {
-    width: 45,
-    height: 55,
+  },  otpInput: {
+    width: 40,
+    height: 50,
     borderRadius: 8,
     borderColor: '#a855f7',
     borderWidth: 1.5,
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: '600',
     textAlign: 'center',
     backgroundColor: 'white',

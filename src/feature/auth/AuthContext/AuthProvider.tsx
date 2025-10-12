@@ -17,6 +17,7 @@ import {
   registerDeviceToken,
 } from '../../../shared/services/notificationService';
 import { OneSignal } from 'react-native-onesignal';
+import { Alert } from 'react-native';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
@@ -29,7 +30,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 const [hasLoggedOut, setHasLoggedOut] = useState(false);
 const [biometricFailed, setBiometricFailed] = useState(false);
 const [biometricLoading, setBiometricLoading] = useState(false);
-
 
 
   // 🔹 Request OTP
@@ -53,7 +53,10 @@ const [biometricLoading, setBiometricLoading] = useState(false);
           message: error.response.data.message,
         };
       }
-      console.error('Error requesting OTP:', error);
+       
+      // console.error('Error requesting OTP:', error);
+      // Re-throw the error so the calling component can handle it
+      throw error;
     } finally {
       setLoadingApi(false);
     }
