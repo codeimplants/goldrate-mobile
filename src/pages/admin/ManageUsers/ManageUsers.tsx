@@ -1,40 +1,57 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 
 const ManageUsers: React.FC = () => {
   const navigation = useNavigation();
-
   return (
-    <View style={styles.container}>
-      {/* Back Button */}
-      <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-        <Text style={styles.backBtnText}>← Back to Admin</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.title}>Manage Users</Text>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("createUser" as never)}
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView 
+        style={styles.container}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="automatic"
       >
-        <Text style={styles.buttonText}>Create New User</Text>
-      </TouchableOpacity>
+        {/* Back Button */}
+        <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
+          <Text style={styles.backBtnText}>← Back to Admin</Text>
+        </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate("roleUserList" as never)}
-      >
-        <Text style={styles.buttonText}>View Users by Role</Text>
-      </TouchableOpacity>
-    </View>
+        <Text style={styles.title}>Manage Users</Text>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("createUser" as never)}
+        >
+          <Text style={styles.buttonText}>Create New User</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => navigation.navigate("roleUserList" as never)}
+        >
+          <Text style={styles.buttonText}>View Users by Role</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
 export default ManageUsers;
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 20, backgroundColor: "#fdf2f8" },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fdf2f8",
+  },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#fdf2f8" 
+  },
+  content: {
+    padding: 20,
+    paddingBottom: 30,
+  },
   backBtn: {
     alignSelf: "flex-start",
     marginBottom: 10,

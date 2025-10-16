@@ -1,20 +1,26 @@
 import React from 'react';
-import { View, Image, StyleSheet } from 'react-native';
+import { View, Image, StyleSheet, SafeAreaView } from 'react-native';
 
 export const SplashScreen: React.FC = () => {
   return (
-    <View style={styles.container}>
-      <Image
-        source={require('./splash.png')}
-        style={styles.image}
-        resizeMode="cover"
-      />
-      {/* <Text style={styles.text}>सोने भाव</Text> */}
-    </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        <Image
+          source={require('./splash.png')}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        {/* <Text style={styles.text}>सोने भाव</Text> */}
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#06232b',
+  },
   container: {
     flex: 1,
     backgroundColor: '#06232b',
