@@ -36,11 +36,12 @@ const RetailerDashboard: React.FC = () => {
   const [goldRates, setGoldRates] = useState<GoldRate[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [initialLoad, setInitialLoad] = useState<boolean>(true);
-
+  const [showAllRates, setShowAllRates] = useState<boolean>(false);
   // Fetch initial rates
   useEffect(() => {
     const loadInitialRates = async () => {
       try {
+        setLoading(true);
         const rates = await fetchCurrentRatesForRetailer();
         const mappedRates = rates.map((rate: any) => ({
           id: rate.id || '',
@@ -49,26 +50,24 @@ const RetailerDashboard: React.FC = () => {
           timestamp: rate.date,
         }));
         // console.log('Initial rates fetched:', mappedRates);
- setGoldRates(mappedRates.slice(0, 3));
+        setGoldRates(mappedRates);
       } catch (error) {
         console.error('Failed to fetch initial rates:', error);
-        setGoldRates([
-          { id: '1', type: '24K Gold', rate: 0, timestamp: new Date().toISOString() },
-        ]);
+        setGoldRates([]);
+      } finally {
+        setLoading(false);
       }
     };
     loadInitialRates();
   }, [user?.wholesalerId]);
 
 
-  
-  // Set up WebSocket connection
+    // Set up WebSocket connection
 useEffect(() => {
   let isActive = true;
   let socket: any = null;
 
   (async () => {
-    setLoading(true);
     console.log('User data:', user);
 
     try {
@@ -84,13 +83,11 @@ useEffect(() => {
           rate: Number(data.rate),
           timestamp: new Date().toISOString(),
         };
-        setGoldRates(prev => [item, ...prev].slice(0, 5));
+        setGoldRates(prev => [item, ...prev]);
       });
 
-      setLoading(false);
     } catch (error) {
       console.error('WebSocket setup error:', error);
-      setLoading(false);
     }
   })();
 
@@ -127,9 +124,8 @@ useEffect(() => {
   const handlePlaceBooking = () => {
     Alert.alert('Place Booking', 'Booking functionality coming soon...');
   };
-
   const handleViewHistory = () => {
-    Alert.alert('Booking History', 'Viewing your booking history...');
+    setShowAllRates(!showAllRates);
   };
 
   const formatPrice = (price: number) => {
@@ -206,15 +202,21 @@ useEffect(() => {
                   <VStack space={3}>
                     <HStack justifyContent="space-between" alignItems="center">
                       <Heading size="sm" color="purple.800">
-                        Current Gold Rates
+                        Current Gold Rates {showAllRates ? `(${goldRates.length})` : `(Latest 3)`}
                       </Heading>
                       <Badge colorScheme="green" variant="subtle">
                         Live
                       </Badge>
-                    </HStack>
-                    <VStack space={2}>
-                      {goldRates.length > 0 ? (
-                        goldRates.map((rate, index) => (
+                    </HStack>                    <VStack space={2}>
+                      {loading ? (
+                        <VStack justifyContent="center" alignItems="center" py={4}>
+                          <Spinner size="sm" color="purple.600" />
+                          <Text color="gray.500" fontSize="sm" textAlign="center" mt={2}>
+                            Fetching latest gold rates...
+                          </Text>
+                        </VStack>
+                      ) : goldRates.length > 0 ? (
+                        (showAllRates ? goldRates : goldRates.slice(0, 3)).map((rate, index, array) => (
                           <Box key={rate.id}>
                             <HStack justifyContent="space-between" alignItems="center" py={2}>
                               <VStack>
@@ -229,13 +231,21 @@ useEffect(() => {
                                 {formatPrice(rate.rate)}
                               </Text>
                             </HStack>
-                            {index < goldRates.length - 1 && <Divider />}
+                            {index < array.length - 1 && <Divider />}
                           </Box>
                         ))
                       ) : (
-                        <Text color="gray.600" fontSize="sm" textAlign="center" py={4}>
-                          No rates available
-                        </Text>
+                        <VStack
+                          flex={1}
+                          justifyContent="center"
+                          alignItems="center"
+                          py={4}
+                        >
+                          <Text color="gray.500" fontSize="sm" textAlign="center">
+                            No gold rates available at the moment.{'\n'}
+                            Please wait for your wholesaler to update rates.
+                          </Text>
+                        </VStack>
                       )}
                     </VStack>
                   </VStack>
@@ -256,8 +266,7 @@ useEffect(() => {
                       py={3}
                     >
                       Place Booking
-                    </Button>
-                    <Button
+                    </Button>                    <Button
                       flex={1}
                       variant="outline"
                       borderColor="purple.600"
@@ -266,7 +275,7 @@ useEffect(() => {
                       borderRadius="lg"
                       py={3}
                     >
-                      View History
+                      {showAllRates ? 'Show Latest' : 'View All Rates'}
                     </Button>
                   </HStack>
                 </VStack>

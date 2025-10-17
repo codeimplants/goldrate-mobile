@@ -81,18 +81,10 @@ const WholesalerDashboard: React.FC = () => {
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 
-      setGoldRates(sorted.length ? sorted : []);
-    } catch (error) {
+      setGoldRates(sorted.length ? sorted : []);    } catch (error) {
       console.error('Failed to load rates:', error);
       Alert.alert('Error', 'Failed to load gold rates.');
-      setGoldRates([
-        {
-          id: '1',
-          type: '24K Gold',
-          rate: 5555,
-          timestamp: new Date().toISOString(),
-        },
-      ]);
+      setGoldRates([]);
     } finally {
       setLoadingRates(false);
     }
@@ -294,8 +286,7 @@ const WholesalerDashboard: React.FC = () => {
                     <Badge colorScheme="green" variant="subtle">
                       Live
                     </Badge>
-                  </HStack>
-                  <VStack space={2}>
+                  </HStack>                  <VStack space={2}>
                     {loadingRates ? (
                       <VStack
                         flex={1}
@@ -305,8 +296,20 @@ const WholesalerDashboard: React.FC = () => {
                         <Spinner size="lg" color="purple.600" />
                         <Text color="purple.800">Loading rates...</Text>
                       </VStack>
+                    ) : goldRates.length === 0 ? (
+                      <VStack
+                        flex={1}
+                        justifyContent="center"
+                        alignItems="center"
+                        py={4}
+                      >
+                        <Text color="gray.500" fontSize="sm" textAlign="center">
+                          No gold rates available at the moment.{'\n'}
+                          Please update rates to get started.
+                        </Text>
+                      </VStack>
                     ) : (
-                      goldRates.slice(0, 5).map((rate, index) => (
+                      goldRates.slice(0, 1).map((rate, index) => (
                         <Box key={rate.id}>
                           <HStack
                             justifyContent="space-between"
@@ -320,8 +323,7 @@ const WholesalerDashboard: React.FC = () => {
                               <Text fontSize="xs" color="gray.500">
                                 Updated: {formatDateTime(rate.timestamp)}
                               </Text>
-                            </VStack>
-                            <Text
+                            </VStack>                            <Text
                               fontSize="lg"
                               fontWeight="bold"
                               color="green.600"
@@ -329,8 +331,6 @@ const WholesalerDashboard: React.FC = () => {
                               {formatPrice(rate.rate)}
                             </Text>
                           </HStack>
-                          {index <
-                            Math.min(goldRates.length, 5) - 1 && <Divider />}
                         </Box>
                       ))
                     )}

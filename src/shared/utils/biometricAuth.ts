@@ -2,9 +2,12 @@ import EncryptedStorage from "react-native-encrypted-storage";
 import ReactNativeBiometrics from "react-native-biometrics";
 
 export async function saveLoginSession(token: string, user: any) {
-  await EncryptedStorage.setItem("auth_token", token);
-  await EncryptedStorage.setItem("user", JSON.stringify(user));
-  await EncryptedStorage.setItem("biometricEnabled", "true");
+  // await EncryptedStorage.setItem("auth_token", token);
+  // await EncryptedStorage.setItem("user", JSON.stringify(user));
+  // await EncryptedStorage.setItem("biometricEnabled", "true");
+  
+  // Do nothing - biometric functionality is disabled
+  console.log("💡 Biometric functionality is disabled, skipping biometric session save");
 }
 
 export async function checkBiometricAuth(): Promise<{ user: any; token: string } | null> {
