@@ -8,6 +8,7 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
+  SafeAreaView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../../../shared/services/apiClient";
@@ -29,9 +30,34 @@ const CreateUserForm: React.FC = () => {
   );
   const [wholesalers, setWholesalers] = useState<any[]>([]);
   const [selectedWholesaler, setSelectedWholesaler] = useState<string>("");
+  const [mobileError, setMobileError] = useState<string>("");
 
   const { user } = useAuth() as { user: User | null };
   const navigation = useNavigation();
+
+  // Helper function to get remaining digits text
+  const getRemainingDigitsText = (currentLength: number) => {
+    const remaining = 10 - currentLength;
+    if (currentLength === 0) {
+      return 'Enter 10-digit mobile number';
+    } else if (remaining > 0) {
+      return `${remaining} more ${remaining === 1 ? 'digit' : 'digits'} required`;
+    } else if (currentLength === 10) {
+      return '✓ Mobile number is complete';
+    }
+    return '';
+  };
+
+  // Validate mobile number
+  const validateMobile = (text: string) => {
+    if (text.length === 0) {
+      setMobileError("");
+    } else if (text.length < 10) {
+      setMobileError("");
+    } else if (text.length === 10) {
+      setMobileError("");
+    }
+  };
 
   // Fetch wholesalers only if ADMIN is creating a RETAILER
   useEffect(() => {
@@ -55,10 +81,13 @@ const CreateUserForm: React.FC = () => {
       setSelectedWholesaler(String(user.wholesalerId));
     }
   }, [user]);
-
   const handleSubmit = async () => {
     if (!name || !mobile) {
       Alert.alert("Validation", "Name and Mobile are required");
+      return;
+    }
+    if (mobile.length !== 10) {
+      Alert.alert("Validation", "Mobile number must be exactly 10 digits");
       return;
     }
     if (role === "RETAILER" && !selectedWholesaler) {
@@ -96,11 +125,16 @@ const CreateUserForm: React.FC = () => {
       setLoading(false);
     }
   };
-
   return (
-    <ScrollView style={styles.container} keyboardShouldPersistTaps="handled">
-      {/* Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea}>      <ScrollView 
+        style={styles.container} 
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+        contentInsetAdjustmentBehavior="automatic"
+      >
+        {/* Header */}
+        <View style={styles.header}>
         <TouchableOpacity
           style={styles.leftButton}
           onPress={() => navigation.goBack()}
@@ -112,7 +146,7 @@ const CreateUserForm: React.FC = () => {
       </View>
 
       <Text style={styles.title}>Create User</Text>
-
+      
       <TextInput
         style={styles.input}
         placeholder="Name"
@@ -120,15 +154,39 @@ const CreateUserForm: React.FC = () => {
         value={name}
         onChangeText={setName}
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Mobile"
-        placeholderTextColor="#888"
-        keyboardType="phone-pad"
-        maxLength={10}
-        value={mobile}
-        onChangeText={(text) => setMobile(text.replace(/\D/g, ""))}
-      />
+      
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={[
+            styles.input,
+            styles.mobileInput,
+            mobileError ? styles.inputError : null,
+            mobile.length === 10 ? styles.inputSuccess : null
+          ]}
+          placeholder="Mobile (10 digits)"
+          placeholderTextColor="#888"
+          keyboardType="phone-pad"
+          maxLength={10}
+          value={mobile}
+          onChangeText={(text) => {
+            const numericText = text.replace(/\D/g, "");
+            setMobile(numericText);
+            validateMobile(numericText);
+          }}
+        />
+        
+        {/* Helper text for remaining digits */}
+        {!mobileError ? (
+          <Text style={[
+            styles.helperText,
+            mobile.length === 10 ? styles.successText : styles.normalText
+          ]}>
+            {getRemainingDigitsText(mobile.length)}
+          </Text>
+        ) : (
+          <Text style={styles.errorText}>{mobileError}</Text>
+        )}
+      </View>
 
       {/* Role selection → only if user is ADMIN */}
       {user?.role === "ADMIN" && (
@@ -195,9 +253,7 @@ const CreateUserForm: React.FC = () => {
             </Text>
           )}
         </View>
-      )}
-
-      <TouchableOpacity
+      )}      <TouchableOpacity
         style={styles.submitBtn}
         onPress={handleSubmit}
         disabled={loading}
@@ -209,6 +265,7 @@ const CreateUserForm: React.FC = () => {
         )}
       </TouchableOpacity>
     </ScrollView>
+  </SafeAreaView>
   );
 };
 
@@ -216,36 +273,47 @@ export default CreateUserForm;
 
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-header: {
-  marginBottom: 16,
-  padding: 12,
-  borderRadius: 12,
-  backgroundColor: "#f3e8ff",
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  position: "relative",
-},
-headerText: {
-  fontSize: 20,
-  fontWeight: "bold",
-  color: "#6b21a8",
-  flex: 1,
-  textAlign: "center",
-},
-leftButton: {
-  backgroundColor: "#a855f7",
-  paddingHorizontal: 14,
-  paddingVertical: 10,
-  borderRadius: 8,
-  marginRight: 8,
-},
-headerButtons: {
-  flexDirection: "row",
-  marginLeft: 8,
-},
-buttonText: { color: "#fff", fontWeight: "600" },
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#fff" 
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 30,
+  },
+  header: {
+    marginBottom: 16,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#f3e8ff",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    position: "relative",
+  },
+  headerText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#6b21a8",
+    flex: 1,
+    textAlign: "center",
+  },
+  leftButton: {
+    backgroundColor: "#a855f7",
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginRight: 8,
+  },
+  headerButtons: {
+    flexDirection: "row",
+    marginLeft: 8,
+  },
+  buttonText: { color: "#fff", fontWeight: "600" },
   button: {
     backgroundColor: "#a855f7",
     paddingHorizontal: 12,
@@ -266,6 +334,36 @@ buttonText: { color: "#fff", fontWeight: "600" },
     borderRadius: 6,
     marginBottom: 12,
   },
+  inputContainer: {
+    marginBottom: 12,
+  },
+  mobileInput: {
+    marginBottom: 4,
+  },
+  inputError: {
+    borderColor: "#e53e3e",
+  },
+  inputSuccess: {
+    borderColor: "#22c55e",
+  },
+  helperText: {
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 4,
+  },
+  normalText: {
+    color: "#888",
+  },
+  successText: {
+    color: "#22c55e",
+    fontWeight: "600",
+  },
+  errorText: {
+    color: "#e53e3e",
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 4,
+  },
   label: { fontSize: 14, fontWeight: "bold", marginVertical: 6 },
   roleContainer: { flexDirection: "row", marginBottom: 12, flexWrap: "wrap" },
   roleButton: {
@@ -278,12 +376,12 @@ buttonText: { color: "#fff", fontWeight: "600" },
   },
   roleSelected: { backgroundColor: "#a855f7" },
   roleText: { color: "#6b21a8", fontWeight: "bold" },
-  roleTextSelected: { color: "#fff" },
-  submitBtn: {
+  roleTextSelected: { color: "#fff" },  submitBtn: {
     backgroundColor: "#a855f7",
     padding: 14,
     borderRadius: 8,
-    marginTop: 20,
+    marginTop: 30,
+    marginBottom: 10,
     alignItems: "center",
   },
   submitText: { color: "#fff", fontWeight: "bold" },

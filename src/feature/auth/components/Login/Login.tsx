@@ -20,9 +20,34 @@ const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const [cooldown, setCooldown] = useState<number>(0);
+  const [phoneError, setPhoneError] = useState<string>("");
 
   const { requestOtp } = useAuth();
   const navigation = useNavigation();
+
+  // Helper function to get remaining digits text
+  const getRemainingDigitsText = (currentLength: number) => {
+    const remaining = 10 - currentLength;
+    if (currentLength === 0) {
+      return 'Enter 10-digit phone number';
+    } else if (remaining > 0) {
+      return `${remaining} more ${remaining === 1 ? 'digit' : 'digits'} required`;
+    } else if (currentLength === 10) {
+      return '✓ Phone number is complete';
+    }
+    return '';
+  };
+
+  // Validate phone number
+  const validatePhone = (text: string) => {
+    if (text.length === 0) {
+      setPhoneError("");
+    } else if (text.length < 10) {
+      setPhoneError("");
+    } else if (text.length === 10) {
+      setPhoneError("");
+    }
+  };
 
   const formik = useFormik({
     initialValues: { phone: '' },    validationSchema: Yup.object({
@@ -58,9 +83,11 @@ const Login: React.FC = () => {
         }
 
         if (response) {
-          Alert.alert('OTP Sent', `OTP: ${response.info?.otp || 'Check your phone'}`);
+          // Alert.alert('OTP Sent', `OTP: ${response.info?.otp || 'Check your phone'}`);
+          Alert.alert('OTP Sent. Please check your phone.');
           navigation.navigate('otp' as never);
-        }      } catch (err: any) {
+        }  
+          } catch (err: any) {
         // Check if it's a 404 error (user not found)
         if (err.response?.status === 404) {
           const serverMessage = err.response?.data?.message || 'User not found. Please contact your Admin or Wholesaler to be added.';
@@ -112,8 +139,7 @@ const Login: React.FC = () => {
               </Box>
             </LinearGradient>
 
-            <Box bg={'white'} width="100%" p={7} mt={-6}>
-              {/* Phone Input */}
+            <Box bg={'white'} width="100%" p={7} mt={-6}>              {/* Phone Input */}
               <FormControl
                 isInvalid={!!formik.errors.phone && formik.touched.phone}
               >
@@ -121,16 +147,42 @@ const Login: React.FC = () => {
                   Phone Number
                 </Text>
                 <TextInput
-                  keyboardType="number-pad"
-                  onChangeText={formik.handleChange('phone')}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  onChangeText={(text) => {
+                    const numericText = text.replace(/\D/g, "");
+                    formik.setFieldValue('phone', numericText);
+                    validatePhone(numericText);
+                  }}
                   onBlur={formik.handleBlur('phone')}
                   value={formik.values.phone}
                   placeholder="Enter 10-digit phone number"
-                  style={Style.phoneInput}
+                  style={[
+                    Style.phoneInput,
+                    phoneError ? Style.inputError : null,
+                    formik.values.phone.length === 10 ? Style.inputSuccess : null
+                  ]}
                 />
-                <FormControl.ErrorMessage>
-                  {formik.errors.phone}
-                </FormControl.ErrorMessage>
+                  {/* Helper text for remaining digits */}
+                {!phoneError && !formik.errors.phone && !formik.touched.phone ? (
+                  <Text style={[
+                    Style.helperText,
+                    formik.values.phone.length === 10 ? Style.successText : Style.normalText
+                  ]}>
+                    {getRemainingDigitsText(formik.values.phone.length)}
+                  </Text>
+                ) : formik.errors.phone && formik.touched.phone ? (
+                  <FormControl.ErrorMessage>
+                    {formik.errors.phone}
+                  </FormControl.ErrorMessage>
+                ) : (
+                  <Text style={[
+                    Style.helperText,
+                    formik.values.phone.length === 10 ? Style.successText : Style.normalText
+                  ]}>
+                    {getRemainingDigitsText(formik.values.phone.length)}
+                  </Text>
+                )}
               </FormControl>
 
               {/* Submit Button */}
@@ -198,6 +250,31 @@ const Style = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 15,
     color: '#333',
+    marginBottom: 4,
+  },
+  inputError: {
+    borderColor: '#e53e3e',
+  },
+  inputSuccess: {
+    borderColor: '#22c55e',
+  },
+  helperText: {
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 4,
+  },
+  normalText: {
+    color: '#888',
+  },
+  successText: {
+    color: '#22c55e',
+    fontWeight: '600',
+  },
+  errorText: {
+    color: '#e53e3e',
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 4,
   },
 });
 

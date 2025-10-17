@@ -7,6 +7,7 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
+  SafeAreaView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../feature/auth/hooks/useAuth";
@@ -21,19 +22,23 @@ const AdminDashboard: React.FC = () => {
       { text: "Logout", onPress: logout },
     ]);
   };
-
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>Gold Rate Broadcast | Admin</Text>
-        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
-          <Text style={styles.logoutText}>Logout</Text>
-        </TouchableOpacity>
-      </View>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
+          <Text style={styles.title}>Gold Rate Broadcast | Admin</Text>
+          <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+            <Text style={styles.logoutText}>Logout</Text>
+          </TouchableOpacity>
+        </View>
 
-      {/* Main Content */}
-      <ScrollView contentContainerStyle={styles.content}>
+        {/* Main Content */}
+        <ScrollView 
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+          contentInsetAdjustmentBehavior="automatic"
+        >
         <Text style={styles.sectionTitle}>
           Welcome, {user?.name || "Admin"}
         </Text>
@@ -77,16 +82,20 @@ const AdminDashboard: React.FC = () => {
             onPress={() => Alert.alert("Penalties", "Opening penalties...")}
           >
             <Text style={styles.buttonText}>Manage Penalties</Text>
-          </TouchableOpacity>
-        </View>
+          </TouchableOpacity>        </View>
       </ScrollView>
     </View>
+  </SafeAreaView>
   );
 };
 
 export default AdminDashboard;
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fdf2f8",
+  },
   container: { flex: 1, backgroundColor: "#fdf2f8" },
   header: {
     backgroundColor: "#a855f7",
@@ -97,7 +106,10 @@ const styles = StyleSheet.create({
   title: { fontSize: 18, fontWeight: "bold", color: "#fff" },
   logoutBtn: { padding: 8 },
   logoutText: { color: "#fff", fontWeight: "bold" },
-  content: { padding: 16 },
+  content: { 
+    padding: 16, 
+    paddingBottom: 30 
+  },
   sectionTitle: { fontSize: 20, fontWeight: "bold", color: "#6b21a8" },
   card: {
     backgroundColor: "#fff",

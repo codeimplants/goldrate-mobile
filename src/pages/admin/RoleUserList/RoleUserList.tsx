@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet, SafeAreaView, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../../../shared/services/apiClient";
 
@@ -97,11 +97,11 @@ const renderUser = ({ item, index }: { item: User; index: number }) => (
     ))}
   </View>
 );
-
   return (
-    <View style={styles.container}>
-      {/* Header */}
-      <View style={styles.header}>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.container}>
+        {/* Header */}
+        <View style={styles.header}>
         <Text style={styles.headerText}>User Management</Text>
         <View style={styles.headerButtons}>
           <TouchableOpacity
@@ -166,11 +166,16 @@ const renderUser = ({ item, index }: { item: User; index: number }) => (
   </View>
 )}
 
-    </View>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   container: { flex: 1, padding: 16, backgroundColor: "#fff" },
   header: {
     marginBottom: 16,
