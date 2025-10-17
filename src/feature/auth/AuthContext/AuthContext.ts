@@ -10,11 +10,15 @@ export interface AuthContextInterface {
   loadingApi: boolean;
   loadingAuth: boolean;
   phoneNumber: string | null;
+  hasLoggedOut: boolean;
+  biometricFailed: boolean;
+  biometricLoading: boolean;
 
     // Api calls
   requestOtp: (phone: string, force?: boolean) => Promise<RequestOtpResult | undefined>;
   verifyOtp: (otp: string) => Promise<VerifiedUserResponse | undefined>;
   logout: () => void;
+  loginWithBiometric: () => Promise<boolean>;
 }
 
 export const AuthContext = createContext<AuthContextInterface | null>(null);

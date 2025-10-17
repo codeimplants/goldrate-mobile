@@ -1,360 +1,214 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Heading,
-  VStack,
-  HStack,
-  Text,
-  ScrollView,
-  Card,
-  Badge,
-  Divider,
-  Select,
-  CheckIcon,
-} from 'native-base';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import LinearGradient from 'react-native-linear-gradient';
-import { useNavigation } from '@react-navigation/native';
-import { Alert } from 'react-native';
+import React, { useEffect, useState } from "react";
+import { View, Text, TouchableOpacity, FlatList, ActivityIndicator, StyleSheet } from "react-native";
+import { useNavigation } from "@react-navigation/native";
+import apiClient from "../../../shared/services/apiClient";
 
-interface User {
-  id: string;
+type User = {
+  id: number;
   name: string;
-  phone: string;
-  role: 'ADMIN' | 'WHOLESALER' | 'RETAILER';
-  status: 'active' | 'inactive' | 'pending';
-  createdAt: string;
-  lastLogin?: string;
-}
-
-const RoleUserList: React.FC = () => {
-  const navigation = useNavigation();
-  const [users, setUsers] = useState<User[]>([]);
-  const [filteredUsers, setFilteredUsers] = useState<User[]>([]);
-  const [selectedRole, setSelectedRole] = useState<string>('all');
-
-  // Mock data - replace with actual API call
-  useEffect(() => {
-    const mockUsers: User[] = [
-      {
-        id: '1',
-        name: 'John Doe',
-        phone: '9876543210',
-        role: 'WHOLESALER',
-        status: 'active',
-        createdAt: '2024-01-15',
-        lastLogin: '2024-01-20',
-      },
-      {
-        id: '2',
-        name: 'Jane Smith',
-        phone: '9876543211',
-        role: 'RETAILER',
-        status: 'active',
-        createdAt: '2024-01-16',
-        lastLogin: '2024-01-19',
-      },
-      {
-        id: '3',
-        name: 'Bob Johnson',
-        phone: '9876543212',
-        role: 'RETAILER',
-        status: 'pending',
-        createdAt: '2024-01-17',
-      },
-      {
-        id: '4',
-        name: 'Alice Brown',
-        phone: '9876543213',
-        role: 'WHOLESALER',
-        status: 'inactive',
-        createdAt: '2024-01-18',
-        lastLogin: '2024-01-15',
-      },
-      {
-        id: '5',
-        name: 'Charlie Wilson',
-        phone: '9876543214',
-        role: 'ADMIN',
-        status: 'active',
-        createdAt: '2024-01-10',
-        lastLogin: '2024-01-20',
-      },
-    ];
-    setUsers(mockUsers);
-    setFilteredUsers(mockUsers);
-  }, []);
-
-  // Filter users by role
-  useEffect(() => {
-    if (selectedRole === 'all') {
-      setFilteredUsers(users);
-    } else {
-      setFilteredUsers(users.filter(user => user.role === selectedRole));
-    }
-  }, [users, selectedRole]);
-
-  const handleBack = () => {
-    navigation.goBack();
-  };
-
-  const handleUserAction = (userId: string, action: string) => {
-    Alert.alert(
-      'Confirm Action',
-      `Are you sure you want to ${action} this user?`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Confirm',
-          onPress: () => {
-            // Handle user action here
-            Alert.alert('Success', `User ${action} successfully`);
-          },
-        },
-      ]
-    );
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'green';
-      case 'inactive':
-        return 'red';
-      case 'pending':
-        return 'yellow';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getRoleColor = (role: string) => {
-    switch (role) {
-      case 'ADMIN':
-        return 'purple';
-      case 'WHOLESALER':
-        return 'blue';
-      case 'RETAILER':
-        return 'orange';
-      default:
-        return 'gray';
-    }
-  };
-
-  const getRoleStats = () => {
-    const stats = {
-      ADMIN: users.filter(u => u.role === 'ADMIN').length,
-      WHOLESALER: users.filter(u => u.role === 'WHOLESALER').length,
-      RETAILER: users.filter(u => u.role === 'RETAILER').length,
+  mobile: string;
+  role: string;
+  retailerLinks?: {
+    wholesaler?: {
+      name: string;
     };
-    return stats;
+    wholesalerId?: number;
+  }[];
+};
+
+const RoleUserList = () => {
+  const navigation = useNavigation();
+  const [activeRole, setActiveRole] = useState<"wholesalers" | "retailers" | "admins">("wholesalers");
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  const roleApiMap = {
+    wholesalers: "listWholesalers",
+    retailers: "listRetailers",
+    admins: "listAdmins",
   };
 
-  const stats = getRoleStats();
+  useEffect(() => {
+    const fetchUsers = async () => {
+      setLoading(true);
+      try {
+        const endpoint = roleApiMap[activeRole];
+        const res = await apiClient.get(`/api/admin/${endpoint}`);
+        console.log("Fetched users:", res.data);
+        setUsers(res.data);
+      } catch (err) {
+        console.error("❌ Failed to fetch users:", err);
+        setUsers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUsers();
+  }, [activeRole]);
+
+ const columnsMap = {
+  wholesalers: [
+    { key: "no", label: "No." },
+    { key: "name", label: "Name" },
+    { key: "mobile", label: "Mobile" },
+  ],
+  retailers: [
+    { key: "no", label: "No." },
+    { key: "name", label: "Name" },
+    { key: "mobile", label: "Mobile" },
+    { key: "wholesaler", label: "Wholesaler" }, // Only for retailers
+  ],
+  admins: [
+    { key: "no", label: "No." },
+    { key: "name", label: "Name" },
+    { key: "mobile", label: "Mobile" },
+  ],
+};
+
+const getCellValue = (item: User, key: string) => {
+  switch (key) {
+    case "no":
+      return null; // Will be handled in renderUser
+    case "name":
+      return item.name;
+    case "mobile":
+      return item.mobile;
+    case "role":
+      return item.role;
+    case "wholesaler":
+      return item.retailerLinks && item.retailerLinks[0]?.wholesaler?.name
+        ? item.retailerLinks[0].wholesaler.name
+        : "--";
+    default:
+      return "";
+  }
+};
+
+const renderUser = ({ item, index }: { item: User; index: number }) => (
+  <View style={styles.row}>
+    {columnsMap[activeRole].map((col) => (
+      <Text
+        style={[styles.cell, col.key === "no" && styles.cellNo]}
+        key={col.key}
+      >
+        {col.key === "no" ? index + 1 : getCellValue(item, col.key)}
+      </Text>
+    ))}
+  </View>
+);
 
   return (
-    <SafeAreaProvider>
-      <LinearGradient
-        colors={['#f3e8ff', '#fdf2f8']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{ flex: 1 }}
-      >
-        <Box flex={1}>
-          {/* Header */}
-          <LinearGradient
-            colors={['#a855f7', '#ec4899']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              paddingTop: 50,
-              paddingBottom: 20,
-              paddingHorizontal: 20,
-            }}
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerText}>User Management</Text>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.navigate("createUser" as never)}
           >
-            <HStack justifyContent="space-between" alignItems="center">
-              <HStack alignItems="center" space={3}>
-                <Button
-                  variant="ghost"
-                  _text={{ color: 'white' }}
-                  onPress={handleBack}
-                  size="sm"
-                >
-                  ← Back
-                </Button>
-                <VStack>
-                  <Heading size="lg" color="white">
-                    User List
-                  </Heading>
-                  <Text color="white" fontSize="sm">
-                    {filteredUsers.length} users found
-                  </Text>
-                </VStack>
-              </HStack>
-            </HStack>
-          </LinearGradient>
+            <Text style={styles.buttonText}>Create User</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.buttonText}>Back</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
-          {/* Role Stats */}
-          <Box bg="white" mx={4} mt={-4} p={4} borderRadius="xl" shadow={2}>
-            <VStack space={3}>
-              <Text fontWeight="bold" color="gray.700">
-                User Statistics
-              </Text>
-              <HStack justifyContent="space-around">
-                <VStack alignItems="center">
-                  <Text fontSize="2xl" fontWeight="bold" color="purple.600">
-                    {stats.ADMIN}
-                  </Text>
-                  <Text fontSize="xs" color="gray.600">
-                    Admins
-                  </Text>
-                </VStack>
-                <VStack alignItems="center">
-                  <Text fontSize="2xl" fontWeight="bold" color="blue.600">
-                    {stats.WHOLESALER}
-                  </Text>
-                  <Text fontSize="xs" color="gray.600">
-                    Wholesalers
-                  </Text>
-                </VStack>
-                <VStack alignItems="center">
-                  <Text fontSize="2xl" fontWeight="bold" color="orange.600">
-                    {stats.RETAILER}
-                  </Text>
-                  <Text fontSize="xs" color="gray.600">
-                    Retailers
-                  </Text>
-                </VStack>
-              </HStack>
-            </VStack>
-          </Box>
+      {/* Role Tabs */}
+      <View style={styles.tabContainer}>
+        {(["wholesalers", "retailers", "admins"] as const).map((role) => (
+          <TouchableOpacity
+            key={role}
+            style={[
+              styles.tab,
+              activeRole === role ? styles.tabActive : styles.tabInactive,
+            ]}
+            onPress={() => setActiveRole(role)}
+          >
+            <Text
+              style={
+                activeRole === role ? styles.tabTextActive : styles.tabTextInactive
+              }
+            >
+              {role.charAt(0).toUpperCase() + role.slice(1)}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
-          {/* Role Filter */}
-          <Box bg="white" mx={4} mt={4} p={4} borderRadius="xl" shadow={2}>
-            <VStack space={3}>
-              <Text fontWeight="bold" color="gray.700">
-                Filter by Role
-              </Text>
-              <Select
-                selectedValue={selectedRole}
-                minWidth="200"
-                accessibilityLabel="Filter by role"
-                placeholder="All Roles"
-                _selectedItem={{
-                  bg: 'purple.600',
-                  endIcon: <CheckIcon size="5" />,
-                }}
-                onValueChange={setSelectedRole}
-              >
-                <Select.Item label="All Roles" value="all" />
-                <Select.Item label="Admin" value="ADMIN" />
-                <Select.Item label="Wholesaler" value="WHOLESALER" />
-                <Select.Item label="Retailer" value="RETAILER" />
-              </Select>
-            </VStack>
-          </Box>
+    {/* User Table */}
+{loading ? (
+  <ActivityIndicator size="large" color="#9333ea" style={{ marginTop: 20 }} />
+) : users.length === 0 ? (
+  <Text style={styles.noData}>No {activeRole} found.</Text>
+) : (
+  <View style={styles.table}>
+   <View style={[styles.row, styles.headerRow]}>
+  {columnsMap[activeRole].map((col) => (
+    <Text
+      style={[styles.cell, col.key === "no" && styles.cellNo]}
+      key={col.key}
+    >
+      {col.label}
+    </Text>
+  ))}
+</View>
+    <FlatList
+      data={users}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={renderUser}
+    />
+  </View>
+)}
 
-          {/* User List */}
-          <ScrollView flex={1} px={4} py={4}>
-            <VStack space={3}>
-              {filteredUsers.map((user, index) => (
-                <Card key={user.id} bg="white" p={4} borderRadius="xl" shadow={1}>
-                  <VStack space={3}>
-                    <HStack justifyContent="space-between" alignItems="center">
-                      <VStack flex={1}>
-                        <Text fontWeight="bold" fontSize="md" color="gray.800">
-                          {user.name}
-                        </Text>
-                        <Text fontSize="sm" color="gray.600">
-                          {user.phone}
-                        </Text>
-                        <Text fontSize="xs" color="gray.500">
-                          Created: {new Date(user.createdAt).toLocaleDateString()}
-                        </Text>
-                        {user.lastLogin && (
-                          <Text fontSize="xs" color="gray.500">
-                            Last Login: {new Date(user.lastLogin).toLocaleDateString()}
-                          </Text>
-                        )}
-                      </VStack>
-                      <VStack alignItems="flex-end" space={1}>
-                        <Badge
-                          colorScheme={getRoleColor(user.role)}
-                          variant="subtle"
-                        >
-                          {user.role}
-                        </Badge>
-                        <Badge
-                          colorScheme={getStatusColor(user.status)}
-                          variant="subtle"
-                        >
-                          {user.status}
-                        </Badge>
-                      </VStack>
-                    </HStack>
-
-                    <Divider />
-
-                    <HStack space={2} justifyContent="flex-end">
-                      {user.status === 'pending' && (
-                        <Button
-                          size="sm"
-                          bg="green.600"
-                          _text={{ color: 'white' }}
-                          onPress={() => handleUserAction(user.id, 'approve')}
-                        >
-                          Approve
-                        </Button>
-                      )}
-                      {user.status === 'active' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          borderColor="red.600"
-                          _text={{ color: 'red.600' }}
-                          onPress={() => handleUserAction(user.id, 'deactivate')}
-                        >
-                          Deactivate
-                        </Button>
-                      )}
-                      {user.status === 'inactive' && (
-                        <Button
-                          size="sm"
-                          bg="blue.600"
-                          _text={{ color: 'white' }}
-                          onPress={() => handleUserAction(user.id, 'activate')}
-                        >
-                          Activate
-                        </Button>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        borderColor="purple.600"
-                        _text={{ color: 'purple.600' }}
-                        onPress={() => handleUserAction(user.id, 'edit')}
-                      >
-                        Edit
-                      </Button>
-                    </HStack>
-                  </VStack>
-                </Card>
-              ))}
-
-              {filteredUsers.length === 0 && (
-                <Card bg="white" p={8} borderRadius="xl" shadow={1}>
-                  <Text textAlign="center" color="gray.500">
-                    No users found for the selected role
-                  </Text>
-                </Card>
-              )}
-            </VStack>
-          </ScrollView>
-        </Box>
-      </LinearGradient>
-    </SafeAreaProvider>
+    </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
+  header: {
+    marginBottom: 16,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: "#f3e8ff",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  headerText: { fontSize: 20, fontWeight: "bold", color: "#6b21a8" },
+  headerButtons: { flexDirection: "row", gap: 8 },
+  button: {
+    backgroundColor: "#a855f7",
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  buttonText: { color: "#fff", fontWeight: "600" },
+  tabContainer: { flexDirection: "row", marginBottom: 16, gap: 8 },
+  tab: { flex: 1, padding: 10, borderRadius: 8, alignItems: "center" },
+  tabActive: { backgroundColor: "#a855f7" },
+  tabInactive: { backgroundColor: "#f3e8ff" },
+  tabTextActive: { color: "#fff", fontWeight: "bold" },
+  tabTextInactive: { color: "#6b21a8", fontWeight: "bold" },
+  table: { borderWidth: 1, borderColor: "#f0abfc", borderRadius: 8 },
+  row: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3e8ff",
+    paddingVertical: 8,
+    paddingHorizontal: 4,
+  },
+  headerRow: { backgroundColor: "#f3e8ff" },
+  cell: { flex: 1, textAlign: "center" },
+   cellNo: { flex: 0.4 },
+  noData: { textAlign: "center", marginTop: 20, color: "#6b7280" },
+});
 
 export default RoleUserList;

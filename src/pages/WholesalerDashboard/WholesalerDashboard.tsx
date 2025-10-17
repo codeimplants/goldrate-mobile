@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -16,8 +16,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../../feature/auth/hooks/useAuth';
 import { Alert, TextInput, StyleSheet } from 'react-native';
-import { broadcastRate, fetchCurrentRates, fetchRetailers } from '../../shared/services/goldrateService';
-import apiClient from '../../shared/services/apiClient';
+import {
+  broadcastRate,
+  fetchCurrentRates,
+  fetchRetailers,
+} from '../../shared/services/goldrateService';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 interface GoldRate {
   id: string;
@@ -42,74 +46,110 @@ interface User {
   wholesalerId?: number;
   role?: string;
   token?: string;
-
 }
 
-
 const WholesalerDashboard: React.FC = () => {
-  const { logout, user } = useAuth() as { logout: () => void; user: User | null };
+  const { logout, user } = useAuth() as {
+    logout: () => void;
+    user: User | null;
+  };
+
   const [goldRates, setGoldRates] = useState<GoldRate[]>([]);
   const [retailers, setRetailers] = useState<Retailer[]>([]);
   const [newRate, setNewRate] = useState<string>('');
-  const [loading, setLoading] = useState<boolean>(true); // Start with true to prevent empty page
-  const [initialLoad, setInitialLoad] = useState<boolean>(true); // Track if this is first load
+  const [loadingRates, setLoadingRates] = useState<boolean>(true);
+  const [loadingRetailers, setLoadingRetailers] = useState<boolean>(true);
+
   const wholesalerId = user?.wholesalerId;
+  const navigation = useNavigation();
 
-  console.log("userId:", user);
-  // Fetch data on mount
-  useEffect(() => {
-    const loadData = async () => {
-      if (!initialLoad) return;
-      setLoading(true);
-      try {
-        // Fetch rates from API
-        const rates = await fetchCurrentRates(wholesalerId || 1);
-        console.log("Fetched rates:", rates);
-        const mappedRates = rates.map(rate => ({
-          id: rate.id || '',
-          type: `${rate.purity} Gold`,
-          rate: rate.rate,
-          timestamp: rate.date,
-        }));
-        setGoldRates(mappedRates.length ? mappedRates : [
-          { id: '1', type: '24K Gold', rate: 5555, timestamp: new Date().toISOString() },
-        ]);
+  // 🔹 Fetch gold rates only
+  const loadRates = async () => {
+    setLoadingRates(true);
+    try {
+      const rates = await fetchCurrentRates(wholesalerId || 1);
+      const mappedRates = rates.map((rate) => ({
+        id: rate.id || '',
+        type: `${rate.purity} Gold`,
+        rate: rate.rate,
+        timestamp: rate.date,
+      }));
 
-        // Fetch retailers
-        const retailerData = await fetchRetailers(wholesalerId || 1);
-        setRetailers(retailerData.map(r => ({
-          ...r,
-          status: 'active', // or set based on your logic
-        })));
-      } catch (error) {
-        console.error('Failed to load data:', error);
-        Alert.alert('Error', 'Failed to load data. Using fallback data.');
-        setGoldRates([
-          { id: '1', type: '24K Gold', rate: 5555, timestamp: new Date().toISOString() },
-          { id: '2', type: '22K Gold', rate: 62000, timestamp: new Date().toISOString() },
-        ]);
-        setRetailers([
-          { id: 1, name: 'Retailer One', mobile: '1234567890', userCode: 'R001', wholesalerName: 'Wholesaler A', linkedAt: '2023-01-01', status: 'active' },
-        ]);
-      } finally {
-        setLoading(false);
-        setInitialLoad(false);
-      }
-    };
-    loadData();
-  }, [wholesalerId, initialLoad]);
+      // sort latest first
+      const sorted = mappedRates.sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
 
-  const handleLogout = () => {
-    Alert.alert(
-      'Logout',
-      'Are you sure you want to logout?',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Logout', style: 'destructive', onPress: logout },
-      ]
-    );
+      setGoldRates(sorted.length ? sorted : []);
+    } catch (error) {
+      console.error('Failed to load rates:', error);
+      Alert.alert('Error', 'Failed to load gold rates.');
+      setGoldRates([
+        {
+          id: '1',
+          type: '24K Gold',
+          rate: 5555,
+          timestamp: new Date().toISOString(),
+        },
+      ]);
+    } finally {
+      setLoadingRates(false);
+    }
   };
 
+  // 🔹 Fetch retailers only
+  const loadRetailers = async () => {
+    setLoadingRetailers(true);
+    try {
+      const retailerData = await fetchRetailers(wholesalerId || 1);
+      setRetailers(
+        retailerData.map((r) => ({
+          ...r,
+          status: 'active',
+        }))
+      );
+    } catch (error) {
+      console.error('Failed to load retailers:', error);
+      Alert.alert('Error', 'Failed to load retailers.');
+      setRetailers([
+        {
+          id: 1,
+          name: 'NO Retailer',
+          mobile: '1234567890',
+          userCode: 'R001',
+          wholesalerName: 'Wholesaler A',
+          linkedAt: '2023-01-01',
+          status: 'active',
+        },
+      ]);
+    } finally {
+      setLoadingRetailers(false);
+    }
+  };
+
+  // Initial load
+  useEffect(() => {
+    loadRates();
+    loadRetailers();
+  }, [wholesalerId]);
+
+  // Reload when screen comes back into focus (retailer added)
+  useFocusEffect(
+    useCallback(() => {
+      loadRetailers();
+    }, [wholesalerId])
+  );
+
+  // 🔹 Logout
+  const handleLogout = () => {
+    Alert.alert('Logout', 'Are you sure you want to logout?', [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Logout', style: 'destructive', onPress: logout },
+    ]);
+  };
+
+  // 🔹 Update rate
   const handleUpdateRate = async () => {
     const rateNumber = parseFloat(newRate);
     if (!newRate || isNaN(rateNumber)) {
@@ -117,8 +157,7 @@ const WholesalerDashboard: React.FC = () => {
       return;
     }
 
-
-    setLoading(true);
+    setLoadingRates(true);
     try {
       await broadcastRate({
         rate: rateNumber,
@@ -127,32 +166,30 @@ const WholesalerDashboard: React.FC = () => {
       });
       Alert.alert('Success', `Rate broadcasted: ₹${rateNumber}`);
       setNewRate('');
-     
-      
+
+      // ✅ Refresh only rates
+      await loadRates();
     } catch (err) {
       Alert.alert('Error', 'Failed to broadcast rate. Please try again.');
     } finally {
-      setLoading(false);
+      setLoadingRates(false);
     }
   };
 
+  // 🔹 Navigation
   const handleManageRetailers = () => {
-    Alert.alert('Manage Retailers', 'Opening retailer management...');
+    navigation.navigate('createUser' as never);
   };
 
   const handleViewReports = () => {
     Alert.alert('Reports', 'Loading reports...');
   };
 
-  const formatPrice = (price: number) => {
-    return `₹${price.toLocaleString()}`;
-  };
-
+  // 🔹 Utils
+  const formatPrice = (price: number) => `₹${price.toLocaleString()}`;
   const formatDateTime = (isoString: string) => {
     const dateObj = new Date(isoString);
-    const date = dateObj.toLocaleDateString();
-    const time = dateObj.toLocaleTimeString();
-    return `${date} ${time}`;
+    return `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`;
   };
 
   return (
@@ -200,8 +237,12 @@ const WholesalerDashboard: React.FC = () => {
           </LinearGradient>
 
           {/* Main Content */}
-          <ScrollView flex={1} px={4} py={6}>
-
+          <ScrollView
+            flex={1}
+            px={4}
+            py={6}
+            contentContainerStyle={{ paddingBottom: 40 }}
+          >
             <VStack space={4}>
               <Heading size="md" color="purple.800" mb={2}>
                 Welcome, {user?.name || 'Wholesaler'}
@@ -235,7 +276,7 @@ const WholesalerDashboard: React.FC = () => {
                       _text={{ color: 'white', fontWeight: 'bold' }}
                       onPress={handleUpdateRate}
                       borderRadius="lg"
-                      isDisabled={loading}
+                      isDisabled={loadingRates}
                     >
                       Update Rate
                     </Button>
@@ -255,15 +296,23 @@ const WholesalerDashboard: React.FC = () => {
                     </Badge>
                   </HStack>
                   <VStack space={2}>
-                    {loading ? (
-                      <VStack flex={1} justifyContent="center" alignItems="center">
+                    {loadingRates ? (
+                      <VStack
+                        flex={1}
+                        justifyContent="center"
+                        alignItems="center"
+                      >
                         <Spinner size="lg" color="purple.600" />
                         <Text color="purple.800">Loading rates...</Text>
                       </VStack>
                     ) : (
-                        goldRates.slice(0, 5).map((rate, index) => (
+                      goldRates.slice(0, 5).map((rate, index) => (
                         <Box key={rate.id}>
-                          <HStack justifyContent="space-between" alignItems="center" py={2}>
+                          <HStack
+                            justifyContent="space-between"
+                            alignItems="center"
+                            py={2}
+                          >
                             <VStack>
                               <Text fontWeight="bold" color="gray.800">
                                 {rate.type}
@@ -272,13 +321,19 @@ const WholesalerDashboard: React.FC = () => {
                                 Updated: {formatDateTime(rate.timestamp)}
                               </Text>
                             </VStack>
-                            <Text fontSize="lg" fontWeight="bold" color="green.600">
+                            <Text
+                              fontSize="lg"
+                              fontWeight="bold"
+                              color="green.600"
+                            >
                               {formatPrice(rate.rate)}
                             </Text>
                           </HStack>
-                        {index < Math.min(goldRates.length, 5) - 1 && <Divider />}
+                          {index <
+                            Math.min(goldRates.length, 5) - 1 && <Divider />}
                         </Box>
-                      )))}
+                      ))
+                    )}
                   </VStack>
                 </VStack>
               </Card>
@@ -291,19 +346,29 @@ const WholesalerDashboard: React.FC = () => {
                       My Retailers
                     </Heading>
                     <Badge colorScheme="blue" variant="subtle">
-                      {retailers.filter(r => r.status === 'active').length} Active
+                      <Text>
+                        {retailers.filter((r) => r.status === 'active').length} Active
+                      </Text>
                     </Badge>
                   </HStack>
                   <VStack space={2}>
-                    {loading ? (
-                      <VStack flex={1} justifyContent="center" alignItems="center">
+                    {loadingRetailers ? (
+                      <VStack
+                        flex={1}
+                        justifyContent="center"
+                        alignItems="center"
+                      >
                         <Spinner size="lg" color="purple.600" />
                         <Text color="purple.800">Loading retailers...</Text>
                       </VStack>
                     ) : (
-                      retailers.slice(0, 3).map((retailer, index) => (
+                      retailers.map((retailer, index) => (
                         <Box key={retailer.id}>
-                          <HStack justifyContent="space-between" alignItems="center" py={2}>
+                          <HStack
+                            justifyContent="space-between"
+                            alignItems="center"
+                            py={2}
+                          >
                             <VStack>
                               <Text fontWeight="bold" color="gray.800">
                                 {retailer.name}
@@ -313,15 +378,18 @@ const WholesalerDashboard: React.FC = () => {
                               </Text>
                             </VStack>
                             <Badge
-                              colorScheme={retailer.status === 'active' ? 'green' : 'red'}
+                              colorScheme={
+                                retailer.status === 'active' ? 'green' : 'red'
+                              }
                               variant="subtle"
                             >
                               {retailer.status}
                             </Badge>
                           </HStack>
-                          {index < Math.min(retailers.length, 3) - 1 && <Divider />}
+                          <Divider />
                         </Box>
-                      )))}
+                      ))
+                    )}
                   </VStack>
                   <Button
                     variant="outline"
@@ -339,7 +407,7 @@ const WholesalerDashboard: React.FC = () => {
               </Card>
 
               {/* Quick Actions */}
-              <VStack space={3}>
+              <VStack space={5}>
                 <Heading size="sm" color="purple.800">
                   Quick Actions
                 </Heading>
@@ -371,7 +439,6 @@ const WholesalerDashboard: React.FC = () => {
                 </HStack>
               </VStack>
             </VStack>
-
           </ScrollView>
         </Box>
       </LinearGradient>
@@ -392,3 +459,4 @@ const styles = StyleSheet.create({
 });
 
 export default WholesalerDashboard;
+

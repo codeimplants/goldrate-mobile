@@ -4,22 +4,25 @@ import { useAuth } from '../feature/auth/hooks/useAuth';
 import React from 'react';
 import SplashScreen from '../pages/Splash/SplashScreen';
 import BiometricGate from '../components/BiometricGate';
+import BiometricRetry from '../components/BiometricRetry';
 
 const Navigation: React.FC = () => {
-  const { isAuthenticated, loadingAuth } = useAuth();
+  const { isAuthenticated, loadingAuth, hasLoggedOut, biometricFailed, biometricLoading } = useAuth();
 
-  // Show splash only during initial auth bootstrap
-  if (loadingAuth) {
-    return <SplashScreen />;
-  }
+  // Initial auth still loading
+  if (loadingAuth || biometricLoading) return <SplashScreen />;
 
-  return (
-    <>
-      {isAuthenticated ? <AppNavigation /> : <AuthNavigator />}
-      {/* Biometric overlay placeholder; enable when wiring biometrics */}
-     
-    </>
-  );
+  // If biometric failed → retry
+  if (biometricFailed && !isAuthenticated) return <BiometricRetry />;
+
+  // If authenticated → straight to app
+  if (isAuthenticated) return <AppNavigation />;
+
+  // Otherwise → login/signup
+  if (hasLoggedOut || !isAuthenticated) return <AuthNavigator />;
+
+  return <SplashScreen />;
 };
+
 
 export default Navigation;
