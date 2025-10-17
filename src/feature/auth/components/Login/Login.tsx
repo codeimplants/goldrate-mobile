@@ -13,71 +13,99 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as Yup from 'yup';
 import { useAuth } from '../../hooks/useAuth';
 import LinearGradient from 'react-native-linear-gradient';
-import { StyleSheet, TextInput } from 'react-native';
+import { StyleSheet, TextInput, Alert } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 const Login: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [otpSent, setOtpSent] = useState<boolean>(false);
+  const [cooldown, setCooldown] = useState<number>(0);
+  const [phoneError, setPhoneError] = useState<string>("");
 
-  const { requestOtp, verifyOtp } = useAuth();
+  const { requestOtp } = useAuth();
+  const navigation = useNavigation();
 
-  // refs for OTP inputs
-  const otpRefs = Array.from({ length: 4 }).map(() => useRef<TextInput>(null));
+  // Helper function to get remaining digits text
+  const getRemainingDigitsText = (currentLength: number) => {
+    const remaining = 10 - currentLength;
+    if (currentLength === 0) {
+      return 'Enter 10-digit phone number';
+    } else if (remaining > 0) {
+      return `${remaining} more ${remaining === 1 ? 'digit' : 'digits'} required`;
+    } else if (currentLength === 10) {
+      return '✓ Phone number is complete';
+    }
+    return '';
+  };
+
+  // Validate phone number
+  const validatePhone = (text: string) => {
+    if (text.length === 0) {
+      setPhoneError("");
+    } else if (text.length < 10) {
+      setPhoneError("");
+    } else if (text.length === 10) {
+      setPhoneError("");
+    }
+  };
 
   const formik = useFormik({
-    initialValues: { phone: '', otp: '' },
-    validationSchema: Yup.object({
+    initialValues: { phone: '' },    validationSchema: Yup.object({
       phone: Yup.string()
         .required('Phone Number is required')
         .matches(/^\d{10}$/, 'Phone Number should be exactly 10 digits.'),
-      otp: Yup.string().when([], {
-        is: () => otpSent,
-        then: schema =>
-          schema
-            .required('OTP is required')
-            .matches(/^\d{4}$/, 'OTP must be exactly 4 digits'),
-      }),
-    }),
-    onSubmit: async values => {
+    }),onSubmit: async values => {
       setError(null);
       try {
         setLoading(true);
-        if (!otpSent) {
-          // send otp
-          await requestOtp(values.phone);
-          setOtpSent(true);
-        } else {
-          // verify otp
-          await verifyOtp(values.otp);
-          // ✅ navigate or store token
+        const response = await requestOtp(values.phone);
+
+        if (response && "conflict" in response) {
+          Alert.alert(
+            "Already Logged In",
+            response.message,
+            [
+              { text: "Cancel", style: "cancel" },
+              {
+                text: "Logout & Continue",
+                onPress: async () => {
+                  const forceResp = await requestOtp(values.phone, true);
+                  if (forceResp && "success" in forceResp) {
+                    Alert.alert("OTP Sent", `OTP: ${forceResp.info?.otp || "Check your phone"}`);
+                    navigation.navigate("otp" as never);
+                  }
+                },
+              },
+            ],
+            { cancelable: true }
+          );
+          return;
         }
-      } catch (err) {
-        setError(
-          otpSent ? 'Invalid OTP. Please try again.' : 'Failed to send OTP.',
-        );
+
+        if (response) {
+          // Alert.alert('OTP Sent', `OTP: ${response.info?.otp || 'Check your phone'}`);
+          Alert.alert('OTP Sent. Please check your phone.');
+          navigation.navigate('otp' as never);
+        }  
+          } catch (err: any) {
+        // Check if it's a 404 error (user not found)
+        if (err.response?.status === 404) {
+          const serverMessage = err.response?.data?.message || 'User not found. Please contact your Admin or Wholesaler to be added.';
+          Alert.alert("User Not Found", serverMessage);
+        } else if (err.response?.status === 429) {
+          // Rate limit error
+          const serverMessage = err.response?.data?.message || 'Too many OTP requests. Please try again later.';
+          Alert.alert("Too Many Requests", serverMessage);
+        } else {
+          setError('Failed to send OTP. Please try again.');
+        }
       } finally {
         setLoading(false);
       }
     },
   });
 
-  const handleOtpChange = (text: string, index: number) => {
-    const otpArray = formik.values.otp.split('');
-    otpArray[index] = text;
-    const newOtp = otpArray.join('');
-    formik.setFieldValue('otp', newOtp);
 
-    // auto move focus
-    if (text && index < otpRefs.length - 1) {
-      otpRefs[index + 1].current?.focus();
-    }
-
-    // move back on delete
-    if (!text && index > 0) {
-      otpRefs[index - 1].current?.focus();
-    }
-  };
 
   return (
     <SafeAreaProvider>
@@ -111,8 +139,7 @@ const Login: React.FC = () => {
               </Box>
             </LinearGradient>
 
-            <Box bg={'white'} width="100%" p={7} mt={-6}>
-              {/* Phone Input */}
+            <Box bg={'white'} width="100%" p={7} mt={-6}>              {/* Phone Input */}
               <FormControl
                 isInvalid={!!formik.errors.phone && formik.touched.phone}
               >
@@ -120,50 +147,43 @@ const Login: React.FC = () => {
                   Phone Number
                 </Text>
                 <TextInput
-                  editable={!otpSent}
-                  keyboardType="number-pad"
-                  onChangeText={formik.handleChange('phone')}
+                  keyboardType="phone-pad"
+                  maxLength={10}
+                  onChangeText={(text) => {
+                    const numericText = text.replace(/\D/g, "");
+                    formik.setFieldValue('phone', numericText);
+                    validatePhone(numericText);
+                  }}
                   onBlur={formik.handleBlur('phone')}
                   value={formik.values.phone}
                   placeholder="Enter 10-digit phone number"
                   style={[
                     Style.phoneInput,
-                    otpSent && { backgroundColor: '#f3f4f6' },
+                    phoneError ? Style.inputError : null,
+                    formik.values.phone.length === 10 ? Style.inputSuccess : null
                   ]}
                 />
-                <FormControl.ErrorMessage>
-                  {formik.errors.phone}
-                </FormControl.ErrorMessage>
-              </FormControl>
-
-              {/* OTP Boxes */}
-              {otpSent && (
-                <FormControl
-                  mt={4}
-                  isInvalid={!!formik.errors.otp && formik.touched.otp}
-                >
-                  <Text fontSize={'md'} color="#7d36a0">
-                    Verification Code
+                  {/* Helper text for remaining digits */}
+                {!phoneError && !formik.errors.phone && !formik.touched.phone ? (
+                  <Text style={[
+                    Style.helperText,
+                    formik.values.phone.length === 10 ? Style.successText : Style.normalText
+                  ]}>
+                    {getRemainingDigitsText(formik.values.phone.length)}
                   </Text>
-                  <HStack space={3} justifyContent="center">
-                    {Array.from({ length: 4 }).map((_, i) => (
-                      <TextInput
-                        key={i}
-                        ref={otpRefs[i]}
-                        maxLength={1}
-                        editable={otpSent}
-                        keyboardType="number-pad"
-                        value={formik.values.otp[i] || ''}
-                        onChangeText={text => handleOtpChange(text, i)}
-                        style={Style.inputFiels}
-                      />
-                    ))}
-                  </HStack>
+                ) : formik.errors.phone && formik.touched.phone ? (
                   <FormControl.ErrorMessage>
-                    {formik.errors.otp}
+                    {formik.errors.phone}
                   </FormControl.ErrorMessage>
-                </FormControl>
-              )}
+                ) : (
+                  <Text style={[
+                    Style.helperText,
+                    formik.values.phone.length === 10 ? Style.successText : Style.normalText
+                  ]}>
+                    {getRemainingDigitsText(formik.values.phone.length)}
+                  </Text>
+                )}
+              </FormControl>
 
               {/* Submit Button */}
               <LinearGradient
@@ -189,26 +209,11 @@ const Login: React.FC = () => {
                     color: 'white',
                   }}
                 >
-                  {otpSent ? 'Submit OTP' : 'Verify & Login'}
+                  Send OTP
                 </Button>
               </LinearGradient>
 
-              {/* Change Phone */}
-              {otpSent && (
-                <Button
-                  variant="outline"
-                  borderColor="purple.500"
-                  borderRadius="lg"
-                  _text={{ color: 'purple.600', fontWeight: 'medium' }}
-                  mt={4}
-                  onPress={() => {
-                    setOtpSent(false);
-                    formik.resetForm();
-                  }}
-                >
-                  Change Phone Number
-                </Button>
-              )}
+
 
               {error && (
                 <Text color="red.500" fontSize="sm" textAlign="center">
@@ -245,8 +250,32 @@ const Style = StyleSheet.create({
     paddingHorizontal: 12,
     fontSize: 15,
     color: '#333',
+    marginBottom: 4,
+  },
+  inputError: {
+    borderColor: '#e53e3e',
+  },
+  inputSuccess: {
+    borderColor: '#22c55e',
+  },
+  helperText: {
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 4,
+  },
+  normalText: {
+    color: '#888',
+  },
+  successText: {
+    color: '#22c55e',
+    fontWeight: '600',
+  },
+  errorText: {
+    color: '#e53e3e',
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 4,
   },
 });
 
 export default Login;
-9112816968;

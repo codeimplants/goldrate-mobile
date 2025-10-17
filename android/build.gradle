@@ -1,9 +1,9 @@
 buildscript {
     ext {
-        buildToolsVersion = "34.0.0"   
+        buildToolsVersion = "35.0.0"   
         minSdkVersion = 24
-        compileSdkVersion = 34
-        targetSdkVersion = 34
+        compileSdkVersion = 35
+        targetSdkVersion = 35
         ndkVersion = "27.2.12479018" 
         kotlinVersion = "1.9.24"   
         cppFlags = "-std=c++20 -frtti -fexceptions"  
@@ -16,6 +16,9 @@ buildscript {
         classpath("com.android.tools.build:gradle:8.7.0") // must specify version
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+        classpath("com.android.tools.build:gradle:8.1.1") // or 8.11.0
+        classpath("com.google.gms:google-services:4.3.15")
+
     }
 }
 
