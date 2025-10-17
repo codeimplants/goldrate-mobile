@@ -30,7 +30,7 @@ const OtpScreen: React.FC = () => {
     // Start cooldown timer
     const cooldownEnd = Date.now() + 30 * 1000;
     setCooldown(30);
-    
+
     const interval = setInterval(() => {
       const timeLeft = Math.max(0, Math.ceil((cooldownEnd - Date.now()) / 1000));
       setCooldown(timeLeft);
@@ -42,22 +42,27 @@ const OtpScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const handleOtpChange = (text: string, index: number) => {
-    const otpArray = otp.split('');
-    otpArray[index] = text;
-    const newOtp = otpArray.join('');
-    setOtp(newOtp);
-
-    // Auto move focus
-    if (text && index < otpRefs.length - 1) {
+ const handleOtpChange = (text: string, index: number) => {
+  const newOtp = otp.split('');
+  
+  if (text.length === 1) {
+    // A digit was entered
+    newOtp[index] = text;
+    // Auto-focus the next input field
+    if (index < otpRefs.length - 1) {
       otpRefs[index + 1].current?.focus();
     }
-
-    // Move back on delete
-    if (!text && index > 0) {
+  } else if (text.length === 0) {
+    // The current input was cleared, likely by a backspace
+    newOtp[index] = '';
+    // Auto-focus the previous input field
+    if (index > 0) {
       otpRefs[index - 1].current?.focus();
     }
-  };
+  }
+  
+  setOtp(newOtp.join(''));
+};
 
   const handleVerifyOtp = async () => {
     if (otp.length !== 4) {
@@ -71,7 +76,7 @@ const OtpScreen: React.FC = () => {
     try {
       const result = await verifyOtp(otp);
       if (result) {
-         await saveLoginSession(result.token, result.user);
+        await saveLoginSession(result.token, result.user);
         // Navigation will be handled by the auth state change
         Alert.alert('Success', 'Login successful!');
       } else {
@@ -93,11 +98,11 @@ const OtpScreen: React.FC = () => {
     try {
       await requestOtp(phoneNumber);
       Alert.alert('OTP Sent', 'A new OTP has been sent to your phone.');
-      
+
       // Reset cooldown
       const cooldownEnd = Date.now() + 30 * 1000;
       setCooldown(30);
-      
+
       const interval = setInterval(() => {
         const timeLeft = Math.max(0, Math.ceil((cooldownEnd - Date.now()) / 1000));
         setCooldown(timeLeft);

@@ -24,15 +24,25 @@ export interface VerifiedUserResponse {
   };
 }
 
+
+export interface ConflictResponse {
+  conflict: true;
+  message: string;
+}
+
+export type RequestOtpResult = RequestOtpResponse | ConflictResponse;
+
+
 // ==== API Calls ====
 
 // Request OTP
 export const requestOtpOnPhone = async (
   mobile: string,
+  force: boolean = false
 ): Promise<RequestOtpResponse> => {
   console.log(mobile, typeof mobile);
 
-  const response = await apiClient.post('/api/auth/send-otp', { mobile });
+  const response = await apiClient.post('/api/auth/send-otp', { mobile, force });
   console.log(`OTP requested for mobile: ${mobile}`);
   return response.data as RequestOtpResponse;
 };

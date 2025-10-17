@@ -4,6 +4,7 @@ import {
   requestOtpOnPhone,
   verifyOtpFromPhone,
   VerifiedUserResponse,
+  RequestOtpResult, //  import the union type
 } from '../services/authservices';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import EncryptedStorage from 'react-native-encrypted-storage';
@@ -11,7 +12,10 @@ import {
   saveLoginSession,
   checkBiometricAuth,
 } from '../../../shared/utils/biometricAuth';
-import { clearDeviceToken, registerDeviceToken } from '../../../shared/services/notificationService';
+import {
+  clearDeviceToken,
+  registerDeviceToken,
+} from '../../../shared/services/notificationService';
 import { OneSignal } from 'react-native-onesignal';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -24,16 +28,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [role, setRole] = useState<string | null>(null);
 
   // 🔹 Request OTP
-  const requestOtp = async (phone: string) => {
+  const requestOtp = async (
+    phone: string,
+    force: boolean = false
+  ): Promise<RequestOtpResult | undefined> => {
     try {
       setLoadingApi(true);
-      const response = await requestOtpOnPhone(phone);
+      const response = await requestOtpOnPhone(phone, force);
       if (response) {
         setPhoneNumber(phone);
         setOtpSent(true);
-        return response;
+        return response; //  valid RequestOtpResponse
       }
-    } catch (error) {
+    } catch (error: any) {
+      if (error.response?.status === 409 && error.response?.data?.conflict) {
+        //  cast correctly to ConflictResponse
+        return {
+          conflict: true as const,
+          message: error.response.data.message,
+        };
+      }
       console.error('Error requesting OTP:', error);
     } finally {
       setLoadingApi(false);
@@ -49,7 +63,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     try {
       setLoadingApi(true);
-      const response: VerifiedUserResponse | null = await verifyOtpFromPhone(phoneNumber, otp);
+      const response: VerifiedUserResponse | null = await verifyOtpFromPhone(
+        phoneNumber,
+        otp
+      );
 
       if (response?.token) {
         // Save in AsyncStorage
@@ -58,7 +75,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         await AsyncStorage.setItem('role', response.user.role);
         await AsyncStorage.setItem('userId', response.user.id.toString());
         if (response.user.wholesalerId) {
-          await AsyncStorage.setItem('wholesalerId', response.user.wholesalerId.toString());
+          await AsyncStorage.setItem(
+            'wholesalerId',
+            response.user.wholesalerId.toString()
+          );
         }
 
         // Save in EncryptedStorage (for biometrics)
@@ -146,7 +166,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('Device token cleared on logout');
       }
 
-      await AsyncStorage.multiRemove(['user', 'token', 'role', 'userId', 'wholesalerId']);
+      await AsyncStorage.multiRemove([
+        'user',
+        'token',
+        'role',
+        'userId',
+        'wholesalerId',
+      ]);
       await EncryptedStorage.clear();
 
       setUser(null);
