@@ -46,7 +46,8 @@ const Login: React.FC = () => {
                 onPress: async () => {
                   const forceResp = await requestOtp(values.phone, true);
                   if (forceResp && 'success' in forceResp) {
-                    Alert.alert('OTP Sent', 'Please check your phone');
+                    // Alert.alert('OTP Sent', 'Please check your phone');
+                    Alert.alert("OTP Sent", `OTP: ${forceResp.info?.otp || "Check your phone"}`);
                     navigation.navigate('otp' as never);
                   }
                 },
@@ -57,7 +58,8 @@ const Login: React.FC = () => {
         }
 
         if (response) {
-          Alert.alert('OTP Sent. Please check your phone.');
+          Alert.alert('OTP Sent', `OTP: ${response.info?.otp || 'Check your phone'}`);
+          // Alert.alert('OTP Sent. Please check your phone.');
           navigation.navigate('otp' as never);
         }
       } catch (err: any) {
