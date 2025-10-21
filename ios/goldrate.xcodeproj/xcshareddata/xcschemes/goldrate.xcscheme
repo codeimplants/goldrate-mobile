@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "goldrate.app"
+               BuildableName = "&#x938;&#x94b;&#x928;&#x947; &#x92d;&#x93e;&#x935; (Sone Bhav).app"
                BlueprintName = "goldrate"
                ReferencedContainer = "container:goldrate.xcodeproj">
             </BuildableReference>
@@ -55,7 +55,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "goldrate.app"
+            BuildableName = "&#x938;&#x94b;&#x928;&#x947; &#x92d;&#x93e;&#x935; (Sone Bhav).app"
             BlueprintName = "goldrate"
             ReferencedContainer = "container:goldrate.xcodeproj">
          </BuildableReference>
@@ -72,7 +72,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "goldrate.app"
+            BuildableName = "&#x938;&#x94b;&#x928;&#x947; &#x92d;&#x93e;&#x935; (Sone Bhav).app"
             BlueprintName = "goldrate"
             ReferencedContainer = "container:goldrate.xcodeproj">
          </BuildableReference>
