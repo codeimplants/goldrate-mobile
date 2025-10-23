@@ -57,7 +57,7 @@ const AdminDashboard: React.FC = () => {
           </TouchableOpacity>
         </View>
 
-        {/* Reports */}
+        {/* Reports 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>System Reports</Text>
           <Text style={styles.cardDesc}>
@@ -70,8 +70,8 @@ const AdminDashboard: React.FC = () => {
             <Text style={styles.buttonText}>View Reports</Text>
           </TouchableOpacity>
         </View>
-
-        {/* Penalties */}
+      */}
+        {/* Penalties
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Penalty Management</Text>
           <Text style={styles.cardDesc}>
@@ -82,7 +82,10 @@ const AdminDashboard: React.FC = () => {
             onPress={() => Alert.alert("Penalties", "Opening penalties...")}
           >
             <Text style={styles.buttonText}>Manage Penalties</Text>
-          </TouchableOpacity>        </View>
+          </TouchableOpacity>
+        </View>
+       */}
+       
       </ScrollView>
     </View>
   </SafeAreaView>

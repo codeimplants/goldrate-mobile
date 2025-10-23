@@ -251,7 +251,7 @@ useEffect(() => {
                     Quick Actions
                   </Heading>
                   <HStack space={3}>
-                    <Button
+                    {/* <Button
                       flex={1}
                       bg="purple.600"
                       _text={{ color: 'white', fontWeight: 'bold' }}
@@ -260,7 +260,8 @@ useEffect(() => {
                       py={3}
                     >
                       Place Booking
-                    </Button>                    <Button
+                    </Button> */}
+                    <Button
                       flex={1}
                       variant="outline"
                       borderColor="purple.600"
