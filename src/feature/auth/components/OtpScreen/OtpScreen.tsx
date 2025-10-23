@@ -193,6 +193,7 @@ const OtpScreen: React.FC = () => {
                     <Button
                       onPress={handleVerifyOtp}
                       isLoading={loading}
+                      isDisabled={otp.length !== 6 || loading}
                       borderRadius="lg"
                       bg="transparent"
                       _text={{ fontSize: 'md', fontWeight: 'bold', color: 'white' }}

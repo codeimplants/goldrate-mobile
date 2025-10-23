@@ -150,6 +150,7 @@ const Login: React.FC = () => {
                     <Button
                       onPress={formik.handleSubmit as any}
                       isLoading={loading}
+                       isDisabled={formik.values.phone.length !== 10 || loading}
                       bg="transparent"
                       _text={{ color: 'white', fontWeight: 'bold' }}
                     >

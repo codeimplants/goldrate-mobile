@@ -422,7 +422,7 @@ const WholesalerDashboard: React.FC = () => {
                   >
                     Manage Retailers
                   </Button>
-                  <Button
+                  {/* <Button
                     flex={1}
                     variant="outline"
                     _web={{ borderWidth: 1, borderColor: 'purple.600' }}
@@ -435,7 +435,7 @@ const WholesalerDashboard: React.FC = () => {
                     py={3}
                   >
                     View Reports
-                  </Button>
+                  </Button> */}
                 </HStack>
               </VStack>
             </VStack>
