@@ -11,11 +11,12 @@ import {
   Badge,
   Divider,
   Spinner,
+
 } from 'native-base';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../../feature/auth/hooks/useAuth';
-import { Alert } from 'react-native';
+import { Alert, StatusBar } from 'react-native';
 import { connectSocket } from '../../shared/services/socket';
 import { fetchCurrentRatesForRetailer } from '../../shared/services/goldrateService';
 
@@ -145,6 +146,12 @@ useEffect(() => {
 
   return (
     <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content"
+        backgroundColor="transparent"
+        translucent={true}
+      />
+       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <LinearGradient
         colors={['#f3e8ff', '#fdf2f8']}
         start={{ x: 0, y: 0 }}
@@ -291,6 +298,7 @@ useEffect(() => {
           </ScrollView>
         </Box>
       </LinearGradient>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 };

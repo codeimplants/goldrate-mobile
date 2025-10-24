@@ -7,10 +7,12 @@ import {
   ScrollView,
   StyleSheet,
   Alert,
-  SafeAreaView,
+  StatusBar
 } from "react-native";
+
 import { useNavigation } from "@react-navigation/native";
 import { useAuth } from "../../feature/auth/hooks/useAuth";
+import { SafeAreaProvider, SafeAreaView, } from "react-native-safe-area-context";
 
 const AdminDashboard: React.FC = () => {
   const { logout, user } = useAuth();
@@ -23,6 +25,12 @@ const AdminDashboard: React.FC = () => {
     ]);
   };
   return (
+    <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content" 
+        backgroundColor="transparent" 
+        translucent={true}
+      />
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         {/* Header */}
@@ -89,6 +97,7 @@ const AdminDashboard: React.FC = () => {
       </ScrollView>
     </View>
   </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 

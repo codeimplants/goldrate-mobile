@@ -1,5 +1,6 @@
 import React from 'react';
-import { View, Image, StyleSheet, SafeAreaView } from 'react-native';
+import { View, Image, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export const SplashScreen: React.FC = () => {
   return (
