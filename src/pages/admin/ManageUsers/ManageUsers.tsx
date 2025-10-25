@@ -1,12 +1,20 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "native-base";
 
 const ManageUsers: React.FC = () => {
   const navigation = useNavigation();
   return (
+     <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content" 
+        backgroundColor="transparent" 
+        translucent={true}
+      />
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView 
+      <ScrollView
         style={styles.container}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -34,6 +42,7 @@ const ManageUsers: React.FC = () => {
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
@@ -44,9 +53,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fdf2f8",
   },
-  container: { 
-    flex: 1, 
-    backgroundColor: "#fdf2f8" 
+  container: {
+    flex: 1,
+    backgroundColor: "#fdf2f8"
   },
   content: {
     padding: 20,

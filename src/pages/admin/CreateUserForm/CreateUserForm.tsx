@@ -8,11 +8,13 @@ import {
   Alert,
   ScrollView,
   ActivityIndicator,
-  SafeAreaView,
+  
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import apiClient from "../../../shared/services/apiClient";
 import { useAuth } from "../../../feature/auth/hooks/useAuth";
+import { StatusBar } from "native-base";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 interface User {
   name?: string;
@@ -126,15 +128,22 @@ const CreateUserForm: React.FC = () => {
     }
   };
   return (
-    <SafeAreaView style={styles.safeArea}>      <ScrollView 
-        style={styles.container} 
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-        contentInsetAdjustmentBehavior="automatic"
-      >
-        {/* Header */}
-        <View style={styles.header}>
+    <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content" 
+        backgroundColor="transparent" 
+        translucent={true}
+      />
+    <SafeAreaView style={styles.safeArea}>
+      <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+      contentInsetAdjustmentBehavior="automatic"
+    >
+      {/* Header */}
+      <View style={styles.header}>
         <TouchableOpacity
           style={styles.leftButton}
           onPress={() => navigation.goBack()}
@@ -146,7 +155,7 @@ const CreateUserForm: React.FC = () => {
       </View>
 
       <Text style={styles.title}>Create User</Text>
-      
+
       <TextInput
         style={styles.input}
         placeholder="Name"
@@ -154,7 +163,7 @@ const CreateUserForm: React.FC = () => {
         value={name}
         onChangeText={setName}
       />
-      
+
       <View style={styles.inputContainer}>
         <TextInput
           style={[
@@ -174,7 +183,7 @@ const CreateUserForm: React.FC = () => {
             validateMobile(numericText);
           }}
         />
-        
+
         {/* Helper text for remaining digits */}
         {!mobileError ? (
           <Text style={[
@@ -225,7 +234,7 @@ const CreateUserForm: React.FC = () => {
                   style={[
                     styles.roleButton,
                     selectedWholesaler === String(w.wholesaler?.id) &&
-                      styles.roleSelected,
+                    styles.roleSelected,
                   ]}
                   onPress={() =>
                     setSelectedWholesaler(String(w.wholesaler?.id))
@@ -235,7 +244,7 @@ const CreateUserForm: React.FC = () => {
                     style={[
                       styles.roleText,
                       selectedWholesaler === String(w.wholesaler?.id) &&
-                        styles.roleTextSelected,
+                      styles.roleTextSelected,
                     ]}
                   >
                     {w.wholesaler?.name || "Unnamed"}
@@ -265,7 +274,8 @@ const CreateUserForm: React.FC = () => {
         )}
       </TouchableOpacity>
     </ScrollView>
-  </SafeAreaView>
+    </SafeAreaView>
+    </SafeAreaProvider>
   );
 };
 
@@ -277,9 +287,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
   },
-  container: { 
-    flex: 1, 
-    backgroundColor: "#fff" 
+  container: {
+    flex: 1,
+    backgroundColor: "#fff"
   },
   scrollContent: {
     padding: 16,
@@ -376,7 +386,7 @@ const styles = StyleSheet.create({
   },
   roleSelected: { backgroundColor: "#a855f7" },
   roleText: { color: "#6b21a8", fontWeight: "bold" },
-  roleTextSelected: { color: "#fff" },  submitBtn: {
+  roleTextSelected: { color: "#fff" }, submitBtn: {
     backgroundColor: "#a855f7",
     padding: 14,
     borderRadius: 8,

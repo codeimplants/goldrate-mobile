@@ -12,10 +12,10 @@ import {
   Divider,
   Spinner,
 } from 'native-base';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../../feature/auth/hooks/useAuth';
-import { Alert, TextInput, StyleSheet } from 'react-native';
+import { Alert, TextInput, StyleSheet,StatusBar } from 'react-native';
 import {
   broadcastRate,
   fetchCurrentRates,
@@ -186,6 +186,12 @@ const WholesalerDashboard: React.FC = () => {
 
   return (
     <SafeAreaProvider>
+      <StatusBar
+        barStyle="dark-content" 
+        backgroundColor="transparent" 
+        translucent={true}
+      />
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
       <LinearGradient
         colors={['#f3e8ff', '#fdf2f8']}
         start={{ x: 0, y: 0 }}
@@ -199,7 +205,7 @@ const WholesalerDashboard: React.FC = () => {
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
             style={{
-              paddingTop: 50,
+              paddingTop: 20,
               paddingBottom: 20,
               paddingHorizontal: 20,
             }}
@@ -442,6 +448,7 @@ const WholesalerDashboard: React.FC = () => {
           </ScrollView>
         </Box>
       </LinearGradient>
+      </SafeAreaView>
     </SafeAreaProvider>
   );
 };

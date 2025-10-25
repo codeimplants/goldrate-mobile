@@ -77,7 +77,7 @@ const Login: React.FC = () => {
   });
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#f3e8ff' }}>
+    <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
       <LinearGradient colors={['#f3e8ff', '#fdf2f8']} style={{ flex: 1 }}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
