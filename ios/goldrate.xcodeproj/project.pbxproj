@@ -16,7 +16,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		13B07F961A680F5B00A75B9A /* सोने भाव (Sone Bhav).app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "सोने भाव (Sone Bhav).app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		13B07F961A680F5B00A75B9A /* Sone Bhav.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Sone Bhav.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = goldrate/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = goldrate/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		478669DB415350CE83ABFBBB /* Pods_goldrate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_goldrate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -85,7 +85,7 @@
 		83CBBA001A601CBA00E9B192 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				13B07F961A680F5B00A75B9A /* सोने भाव (Sone Bhav).app */,
+				13B07F961A680F5B00A75B9A /* Sone Bhav.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -121,7 +121,7 @@
 			);
 			name = goldrate;
 			productName = goldrate;
-			productReference = 13B07F961A680F5B00A75B9A /* सोने भाव (Sone Bhav).app */;
+			productReference = 13B07F961A680F5B00A75B9A /* Sone Bhav.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -295,7 +295,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.codeimplants.sonebhav;
-				PRODUCT_NAME = "सोने भाव (Sone Bhav)";
+				PRODUCT_NAME = "Sone Bhav";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -328,7 +328,7 @@
 					"-lc++",
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.codeimplants.sonebhav;
-				PRODUCT_NAME = "सोने भाव (Sone Bhav)";
+				PRODUCT_NAME = "Sone Bhav";
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
