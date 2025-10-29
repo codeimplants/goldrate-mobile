@@ -213,7 +213,7 @@ const WholesalerDashboard: React.FC = () => {
             <HStack justifyContent="space-between" alignItems="center">
               <VStack>
                 <Heading size="lg" color="white">
-                  Gold Rate Broadcast
+                  सोने भाव (Sone Bhav)
                 </Heading>
                 <Text color="white" fontSize="sm">
                   Wholesaler Dashboard

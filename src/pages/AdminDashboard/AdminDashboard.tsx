@@ -35,7 +35,7 @@ const AdminDashboard: React.FC = () => {
       <View style={styles.container}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Gold Rate Broadcast | Admin</Text>
+          <Text style={styles.title}>सोने भाव (Sone Bhav) | Admin</Text>
           <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
             <Text style={styles.logoutText}>Logout</Text>
           </TouchableOpacity>
