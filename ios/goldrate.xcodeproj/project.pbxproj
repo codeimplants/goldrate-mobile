@@ -21,6 +21,7 @@
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = goldrate/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		478669DB415350CE83ABFBBB /* Pods_goldrate.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_goldrate.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		52020ACB2EA2B863008C1983 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		52CDAF452F01161600788989 /* goldrate.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = goldrate.entitlements; path = goldrate/goldrate.entitlements; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = goldrate/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = goldrate/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		AD0392D5400F6AC7C2E71A91 /* Pods-goldrate.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-goldrate.release.xcconfig"; path = "Target Support Files/Pods-goldrate/Pods-goldrate.release.xcconfig"; sourceTree = "<group>"; };
@@ -43,6 +44,7 @@
 		13B07FAE1A68108700A75B9A /* goldrate */ = {
 			isa = PBXGroup;
 			children = (
+				52CDAF452F01161600788989 /* goldrate.entitlements */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				761780EC2CA45674006654EE /* AppDelegate.swift */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
@@ -275,6 +277,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = goldrate/goldrate.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -309,6 +312,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_ENTITLEMENTS = goldrate/goldrate.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
