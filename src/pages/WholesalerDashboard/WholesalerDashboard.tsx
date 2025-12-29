@@ -15,7 +15,7 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../../feature/auth/hooks/useAuth';
-import { Alert, TextInput, StyleSheet,StatusBar } from 'react-native';
+import { Alert, TextInput, StyleSheet, StatusBar } from 'react-native';
 import {
   broadcastRate,
   fetchCurrentRates,
@@ -81,7 +81,8 @@ const WholesalerDashboard: React.FC = () => {
           new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
       );
 
-      setGoldRates(sorted.length ? sorted : []);    } catch (error) {
+      setGoldRates(sorted.length ? sorted : []);
+    } catch (error) {
       console.error('Failed to load rates:', error);
       Alert.alert('Error', 'Failed to load gold rates.');
       setGoldRates([]);
@@ -187,248 +188,248 @@ const WholesalerDashboard: React.FC = () => {
   return (
     <SafeAreaProvider>
       <StatusBar
-        barStyle="dark-content" 
-        backgroundColor="transparent" 
+        barStyle="dark-content"
+        backgroundColor="transparent"
         translucent={true}
       />
-    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-      <LinearGradient
-        colors={['#f3e8ff', '#fdf2f8']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{ flex: 1 }}
-      >
-        <Box flex={1}>
-          {/* Header */}
-          <LinearGradient
-            colors={['#a855f7', '#ec4899']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-            style={{
-              paddingTop: 20,
-              paddingBottom: 20,
-              paddingHorizontal: 20,
-            }}
-          >
-            <HStack justifyContent="space-between" alignItems="center">
-              <VStack>
-                <Heading size="lg" color="white">
-                  सोने भाव (Sone Bhav)
-                </Heading>
-                <Text color="white" fontSize="sm">
-                  Wholesaler Dashboard
-                </Text>
-              </VStack>
-              <Button
-                variant="outline"
-                _web={{ borderWidth: 1, borderColor: 'white' }}
-                _ios={{ borderWidth: 1, borderColor: 'white' }}
-                _android={{ borderWidth: 1, borderColor: 'white' }}
-                backgroundColor="transparent"
-                _text={{ color: 'white' }}
-                onPress={handleLogout}
-                size="sm"
-              >
-                Logout
-              </Button>
-            </HStack>
-          </LinearGradient>
-
-          {/* Main Content */}
-          <ScrollView
-            flex={1}
-            px={4}
-            py={6}
-            contentContainerStyle={{ paddingBottom: 40 }}
-          >
-            <VStack space={4}>
-              <Heading size="md" color="purple.800" mb={2}>
-                Welcome, {user?.name || 'Wholesaler'}
-              </Heading>
-
-              {/* Rate Management */}
-              <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                <VStack space={3}>
-                  <Heading size="sm" color="purple.800">
-                    Update Gold Rates
+      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+        <LinearGradient
+          colors={['#f3e8ff', '#fdf2f8']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{ flex: 1 }}
+        >
+          <Box flex={1}>
+            {/* Header */}
+            <LinearGradient
+              colors={['#a855f7', '#ec4899']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={{
+                paddingTop: 10,
+                paddingHorizontal: 10,
+                height: 80
+              }}
+            >
+              <HStack justifyContent="space-between" alignItems="center" px={4}>
+                <VStack>
+                  <Heading size="lg" color="white">
+                    सोने भाव (Sone Bhav)
                   </Heading>
-                  <VStack space={2}>
-                    <Text fontSize="sm" color="gray.600">
-                      New Rate (₹ per gram)
-                    </Text>
-                    <TextInput
-                      placeholder="Enter new rate"
-                      value={newRate}
-                      onChangeText={(text) => {
-                        const formatted = text.replace(/[^0-9.]/g, '');
-                        const parts = formatted.split('.');
-                        if (parts.length > 2) return;
-                        setNewRate(formatted);
-                      }}
-                      keyboardType="decimal-pad"
-                      style={styles.input}
-                      placeholderTextColor="#718096"
-                    />
+                  <Text color="white" fontSize="sm">
+                    Wholesaler Dashboard
+                  </Text>
+                </VStack>
+                <Button
+                  variant="outline"
+                  _web={{ borderWidth: 1, borderColor: 'white' }}
+                  _ios={{ borderWidth: 1, borderColor: 'white' }}
+                  _android={{ borderWidth: 1, borderColor: 'white' }}
+                  backgroundColor="transparent"
+                  _text={{ color: 'white' }}
+                  onPress={handleLogout}
+                  size="sm"
+                >
+                  Logout
+                </Button>
+              </HStack>
+            </LinearGradient>
+
+            {/* Main Content */}
+            <ScrollView
+              flex={1}
+              px={4}
+              py={6}
+              contentContainerStyle={{ paddingBottom: 40 }}
+            >
+              <VStack space={4}>
+                <Heading size="md" color="purple.800" mb={2}>
+                  Welcome, {user?.name || 'Wholesaler'}
+                </Heading>
+
+                {/* Rate Management */}
+                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
+                  <VStack space={3}>
+                    <Heading size="sm" color="purple.800">
+                      Update Gold Rates
+                    </Heading>
+                    <VStack space={2}>
+                      <Text fontSize="sm" color="gray.600">
+                        New Rate (₹ per gram)
+                      </Text>
+                      <TextInput
+                        placeholder="Enter new rate"
+                        value={newRate}
+                        onChangeText={(text) => {
+                          const formatted = text.replace(/[^0-9.]/g, '');
+                          const parts = formatted.split('.');
+                          if (parts.length > 2) return;
+                          setNewRate(formatted);
+                        }}
+                        keyboardType="decimal-pad"
+                        style={styles.input}
+                        placeholderTextColor="#718096"
+                      />
+                      <Button
+                        bg="purple.600"
+                        _text={{ color: 'white', fontWeight: 'bold' }}
+                        onPress={handleUpdateRate}
+                        borderRadius="lg"
+                        isDisabled={loadingRates}
+                      >
+                        Update Rate
+                      </Button>
+                    </VStack>
+                  </VStack>
+                </Card>
+
+                {/* Current Rates */}
+                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
+                  <VStack space={3}>
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Heading size="sm" color="purple.800">
+                        Current Gold Rates
+                      </Heading>
+                      <Badge colorScheme="green" variant="subtle">
+                        Live
+                      </Badge>
+                    </HStack>                  <VStack space={2}>
+                      {loadingRates ? (
+                        <VStack
+                          flex={1}
+                          justifyContent="center"
+                          alignItems="center"
+                        >
+                          <Spinner size="lg" color="purple.600" />
+                          <Text color="purple.800">Loading rates...</Text>
+                        </VStack>
+                      ) : goldRates.length === 0 ? (
+                        <VStack
+                          flex={1}
+                          justifyContent="center"
+                          alignItems="center"
+                          py={4}
+                        >
+                          <Text color="gray.500" fontSize="sm" textAlign="center">
+                            No gold rates available at the moment.{'\n'}
+                            Please update rates to get started.
+                          </Text>
+                        </VStack>
+                      ) : (
+                        goldRates.slice(0, 1).map((rate, index) => (
+                          <Box key={rate.id}>
+                            <HStack
+                              justifyContent="space-between"
+                              alignItems="center"
+                              py={2}
+                            >
+                              <VStack>
+                                <Text fontWeight="bold" color="gray.800">
+                                  {rate.type}
+                                </Text>
+                                <Text fontSize="xs" color="gray.500">
+                                  Updated: {formatDateTime(rate.timestamp)}
+                                </Text>
+                              </VStack>                            <Text
+                                fontSize="lg"
+                                fontWeight="bold"
+                                color="green.600"
+                              >
+                                {formatPrice(rate.rate)}
+                              </Text>
+                            </HStack>
+                          </Box>
+                        ))
+                      )}
+                    </VStack>
+                  </VStack>
+                </Card>
+
+                {/* Retailer Management */}
+                <Card bg="white" p={4} borderRadius="xl" shadow={2}>
+                  <VStack space={3}>
+                    <HStack justifyContent="space-between" alignItems="center">
+                      <Heading size="sm" color="purple.800">
+                        My Retailers
+                      </Heading>
+                      <Badge colorScheme="blue" variant="subtle">
+                        <Text>
+                          {retailers.filter((r) => r.status === 'active').length} Active
+                        </Text>
+                      </Badge>
+                    </HStack>
+                    <VStack space={2}>
+                      {loadingRetailers ? (
+                        <VStack
+                          flex={1}
+                          justifyContent="center"
+                          alignItems="center"
+                        >
+                          <Spinner size="lg" color="purple.600" />
+                          <Text color="purple.800">Loading retailers...</Text>
+                        </VStack>
+                      ) : (
+                        retailers.map((retailer, index) => (
+                          <Box key={retailer.id}>
+                            <HStack
+                              justifyContent="space-between"
+                              alignItems="center"
+                              py={2}
+                            >
+                              <VStack>
+                                <Text fontWeight="bold" color="gray.800">
+                                  {retailer.name}
+                                </Text>
+                                <Text fontSize="xs" color="gray.500">
+                                  {retailer.mobile}
+                                </Text>
+                              </VStack>
+                              <Badge
+                                colorScheme={
+                                  retailer.status === 'active' ? 'green' : 'red'
+                                }
+                                variant="subtle"
+                              >
+                                {retailer.status}
+                              </Badge>
+                            </HStack>
+                            <Divider />
+                          </Box>
+                        ))
+                      )}
+                    </VStack>
                     <Button
-                      bg="purple.600"
-                      _text={{ color: 'white', fontWeight: 'bold' }}
-                      onPress={handleUpdateRate}
+                      variant="outline"
+                      _web={{ borderWidth: 1, borderColor: 'purple.600' }}
+                      _ios={{ borderWidth: 1, borderColor: 'purple.600' }}
+                      _android={{ borderWidth: 1, borderColor: 'purple.600' }}
+                      backgroundColor="transparent"
+                      _text={{ color: 'purple.600', fontWeight: 'bold' }}
+                      onPress={handleManageRetailers}
                       borderRadius="lg"
-                      isDisabled={loadingRates}
                     >
-                      Update Rate
+                      Manage All Retailers
                     </Button>
                   </VStack>
-                </VStack>
-              </Card>
+                </Card>
 
-              {/* Current Rates */}
-              <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                <VStack space={3}>
-                  <HStack justifyContent="space-between" alignItems="center">
-                    <Heading size="sm" color="purple.800">
-                      Current Gold Rates
-                    </Heading>
-                    <Badge colorScheme="green" variant="subtle">
-                      Live
-                    </Badge>
-                  </HStack>                  <VStack space={2}>
-                    {loadingRates ? (
-                      <VStack
-                        flex={1}
-                        justifyContent="center"
-                        alignItems="center"
-                      >
-                        <Spinner size="lg" color="purple.600" />
-                        <Text color="purple.800">Loading rates...</Text>
-                      </VStack>
-                    ) : goldRates.length === 0 ? (
-                      <VStack
-                        flex={1}
-                        justifyContent="center"
-                        alignItems="center"
-                        py={4}
-                      >
-                        <Text color="gray.500" fontSize="sm" textAlign="center">
-                          No gold rates available at the moment.{'\n'}
-                          Please update rates to get started.
-                        </Text>
-                      </VStack>
-                    ) : (
-                      goldRates.slice(0, 1).map((rate, index) => (
-                        <Box key={rate.id}>
-                          <HStack
-                            justifyContent="space-between"
-                            alignItems="center"
-                            py={2}
-                          >
-                            <VStack>
-                              <Text fontWeight="bold" color="gray.800">
-                                {rate.type}
-                              </Text>
-                              <Text fontSize="xs" color="gray.500">
-                                Updated: {formatDateTime(rate.timestamp)}
-                              </Text>
-                            </VStack>                            <Text
-                              fontSize="lg"
-                              fontWeight="bold"
-                              color="green.600"
-                            >
-                              {formatPrice(rate.rate)}
-                            </Text>
-                          </HStack>
-                        </Box>
-                      ))
-                    )}
-                  </VStack>
-                </VStack>
-              </Card>
-
-              {/* Retailer Management */}
-              <Card bg="white" p={4} borderRadius="xl" shadow={2}>
-                <VStack space={3}>
-                  <HStack justifyContent="space-between" alignItems="center">
-                    <Heading size="sm" color="purple.800">
-                      My Retailers
-                    </Heading>
-                    <Badge colorScheme="blue" variant="subtle">
-                      <Text>
-                        {retailers.filter((r) => r.status === 'active').length} Active
-                      </Text>
-                    </Badge>
-                  </HStack>
-                  <VStack space={2}>
-                    {loadingRetailers ? (
-                      <VStack
-                        flex={1}
-                        justifyContent="center"
-                        alignItems="center"
-                      >
-                        <Spinner size="lg" color="purple.600" />
-                        <Text color="purple.800">Loading retailers...</Text>
-                      </VStack>
-                    ) : (
-                      retailers.map((retailer, index) => (
-                        <Box key={retailer.id}>
-                          <HStack
-                            justifyContent="space-between"
-                            alignItems="center"
-                            py={2}
-                          >
-                            <VStack>
-                              <Text fontWeight="bold" color="gray.800">
-                                {retailer.name}
-                              </Text>
-                              <Text fontSize="xs" color="gray.500">
-                                {retailer.mobile}
-                              </Text>
-                            </VStack>
-                            <Badge
-                              colorScheme={
-                                retailer.status === 'active' ? 'green' : 'red'
-                              }
-                              variant="subtle"
-                            >
-                              {retailer.status}
-                            </Badge>
-                          </HStack>
-                          <Divider />
-                        </Box>
-                      ))
-                    )}
-                  </VStack>
-                  <Button
-                    variant="outline"
-                    _web={{ borderWidth: 1, borderColor: 'purple.600' }}
-                    _ios={{ borderWidth: 1, borderColor: 'purple.600' }}
-                    _android={{ borderWidth: 1, borderColor: 'purple.600' }}
-                    backgroundColor="transparent"
-                    _text={{ color: 'purple.600', fontWeight: 'bold' }}
-                    onPress={handleManageRetailers}
-                    borderRadius="lg"
-                  >
-                    Manage All Retailers
-                  </Button>
-                </VStack>
-              </Card>
-
-              {/* Quick Actions */}
-              <VStack space={5}>
-                <Heading size="sm" color="purple.800">
-                  Quick Actions
-                </Heading>
-                <HStack space={3}>
-                  <Button
-                    flex={1}
-                    bg="purple.600"
-                    _text={{ color: 'white', fontWeight: 'bold' }}
-                    onPress={handleManageRetailers}
-                    borderRadius="lg"
-                    py={3}
-                  >
-                    Manage Retailers
-                  </Button>
-                  {/* <Button
+                {/* Quick Actions */}
+                <VStack space={5}>
+                  <Heading size="sm" color="purple.800">
+                    Quick Actions
+                  </Heading>
+                  <HStack space={3}>
+                    <Button
+                      flex={1}
+                      bg="purple.600"
+                      _text={{ color: 'white', fontWeight: 'bold' }}
+                      onPress={handleManageRetailers}
+                      borderRadius="lg"
+                      py={3}
+                    >
+                      Manage Retailers
+                    </Button>
+                    {/* <Button
                     flex={1}
                     variant="outline"
                     _web={{ borderWidth: 1, borderColor: 'purple.600' }}
@@ -442,12 +443,12 @@ const WholesalerDashboard: React.FC = () => {
                   >
                     View Reports
                   </Button> */}
-                </HStack>
+                  </HStack>
+                </VStack>
               </VStack>
-            </VStack>
-          </ScrollView>
-        </Box>
-      </LinearGradient>
+            </ScrollView>
+          </Box>
+        </LinearGradient>
       </SafeAreaView>
     </SafeAreaProvider>
   );
