@@ -19,6 +19,10 @@ import {
 import { OneSignal } from 'react-native-onesignal';
 import { Alert } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { registerLogoutHandler } from '../../../shared/services/apiClient';
+import { connectSocket, disconnectSocket, getSocket } from '../../../shared/services/socket';
+import { forceLogout } from '../../../shared/utils/forceLogout';
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [phoneNumber, setPhoneNumber] = useState<string | null>(null);
@@ -31,6 +35,56 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [hasLoggedOut, setHasLoggedOut] = useState(false);
   const [biometricFailed, setBiometricFailed] = useState(false);
   const [biometricLoading, setBiometricLoading] = useState(false);
+
+//  ENSURE SOCKET IS ALWAYS CONNECTED WHEN AUTHENTICATED
+useEffect(() => {
+  if (isAuthenticated) {
+    connectSocket();
+  } else {
+    disconnectSocket();
+  }
+}, [isAuthenticated]);
+
+
+useEffect(() => {
+  registerLogoutHandler(() => {
+    setUser(null);
+    setRole(null);
+    setIsAuthenticated(false);
+    setHasLoggedOut(true);
+  });
+}, []);
+
+//  SOCKET-BASED FORCE LOGOUT (ONLY PLACE)
+useEffect(() => {
+  let socket: any;
+
+  const setupListener = async () => {
+    socket = await connectSocket();
+
+    const onForceLogout = async () => {
+      console.log('🔥 FORCE LOGOUT RECEIVED (SOCKET)');
+      await forceLogout();
+      disconnectSocket();
+      setUser(null);
+      setRole(null);
+      setIsAuthenticated(false);
+      setHasLoggedOut(true);
+    };
+
+    socket.on('force_logout', onForceLogout);
+  };
+
+  if (isAuthenticated) {
+    setupListener();
+  }
+
+  return () => {
+    if (socket) {
+      socket.off('force_logout');
+    }
+  };
+}, [isAuthenticated]);
 
 
   // 🔹 Request OTP
@@ -174,6 +228,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // 🔹 Logout
   const logout = async () => {
     try {
+      disconnectSocket(); //  important
 
       if (user?.id) {
         await clearDeviceToken(user.id);

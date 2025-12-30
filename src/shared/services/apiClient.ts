@@ -1,12 +1,9 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE } from '../../constant';
-// import Config from 'react-native-config';
+import { forceLogout } from '../utils/forceLogout';
 
-
-// const API_BASE = Config.API_BASE;
-console.log("api link", API_BASE);
-
+console.log('API BASE:', API_BASE);
 
 const apiClient = axios.create({
   baseURL: API_BASE,
@@ -15,30 +12,56 @@ const apiClient = axios.create({
   },
 });
 
-// Request Interceptor: Attach token to each request
+/**
+ * 🔹 Logout callback (registered from AuthProvider)
+ */
+let logoutHandler: (() => void) | null = null;
+
+/**
+ * 🔹 Guard to prevent multiple logout calls
+ */
+let isLoggingOut = false;
+
+/**
+ * 🔹 Register logout handler from React side
+ */
+export const registerLogoutHandler = (handler: () => void) => {
+  logoutHandler = handler;
+};
+
+/**
+ * 🔹 Request Interceptor
+ * Attach JWT token to every request
+ */
 apiClient.interceptors.request.use(
-  async (config) => {
+  async config => {
     const token = await AsyncStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
-  (error) => Promise.reject(error)
+  error => Promise.reject(error)
 );
 
-// Response Interceptor: Handle 401 errors & token expiry
+/**
+ *  Response Interceptor — FORCED LOGOUT CORE
+ */
 apiClient.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    if (error.response && error.response.status === 401) {
-      // Clear storage and redirect to login
-      await AsyncStorage.removeItem('token');
-      await AsyncStorage.removeItem('user');
-      await AsyncStorage.removeItem('role');
-      await AsyncStorage.removeItem('userId');
-      await AsyncStorage.removeItem('wholesalerId');
-    }
+  response => response,
+  async error => {
+    if (error.response?.status === 401 && !isLoggingOut) {
+  isLoggingOut = true;
+
+  await forceLogout();
+  logoutHandler?.();
+
+  setTimeout(() => {
+    isLoggingOut = false;
+  }, 500);
+}
+
+
     return Promise.reject(error);
   }
 );

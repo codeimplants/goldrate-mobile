@@ -15,13 +15,25 @@ import {
 import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
 import LinearGradient from 'react-native-linear-gradient';
 import { useAuth } from '../../feature/auth/hooks/useAuth';
-import { Alert, TextInput, StyleSheet, StatusBar } from 'react-native';
+import { 
+  Alert, 
+  TextInput, 
+  StyleSheet, 
+   StatusBar, 
+  Modal, 
+  Animated, 
+  Dimensions, 
+  View, 
+  TouchableOpacity 
+} from 'react-native';
 import {
   broadcastRate,
   fetchCurrentRates,
   fetchRetailers,
 } from '../../shared/services/goldrateService';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
+
+const { width: screenWidth } = Dimensions.get('window');
 
 interface GoldRate {
   id: string;
@@ -59,10 +71,14 @@ const WholesalerDashboard: React.FC = () => {
   const [newRate, setNewRate] = useState<string>('');
   const [loadingRates, setLoadingRates] = useState<boolean>(true);
   const [loadingRetailers, setLoadingRetailers] = useState<boolean>(true);
+  const [sidebarVisible, setSidebarVisible] = useState(false);
+  const [slideAnim] = useState(new Animated.Value(screenWidth * 0.8));
+  const [overlayAnim] = useState(new Animated.Value(0));
 
   const wholesalerId = user?.wholesalerId;
   const navigation = useNavigation();
 
+  // ...existing code...
   // 🔹 Fetch gold rates only
   const loadRates = async () => {
     setLoadingRates(true);
@@ -134,6 +150,64 @@ const WholesalerDashboard: React.FC = () => {
     }, [wholesalerId])
   );
 
+  // 🔹 Sidebar functions
+  const toggleSidebar = () => {
+    if (sidebarVisible) {
+      // Close
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: screenWidth * 0.8,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => setSidebarVisible(false));
+    } else {
+      // Open
+      setSidebarVisible(true);
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(overlayAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  };
+
+  const closeSidebar = () => {
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: screenWidth * 0.8,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(overlayAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setSidebarVisible(false));
+  };
+
+  const getInitials = (name?: string) => {
+    if (!name) return "WH";
+    return name
+      .split(" ")
+      .map(word => word.charAt(0).toUpperCase())
+      .slice(0, 2)
+      .join("");
+  };
+
   // 🔹 Logout
   const handleLogout = () => {
     Alert.alert('Logout', 'Are you sure you want to logout?', [
@@ -171,11 +245,23 @@ const WholesalerDashboard: React.FC = () => {
 
   // 🔹 Navigation
   const handleManageRetailers = () => {
+    closeSidebar();
     navigation.navigate('createUser' as never);
   };
 
   const handleViewReports = () => {
+    closeSidebar();
     Alert.alert('Reports', 'Loading reports...');
+  };
+
+  const handleSettings = () => {
+    closeSidebar();
+    Alert.alert('Settings', 'Settings functionality coming soon...');
+  };
+
+  const handleRateHistory = () => {
+    closeSidebar();
+    Alert.alert('Rate History', 'Rate history functionality coming soon...');
   };
 
   // 🔹 Utils
@@ -185,6 +271,91 @@ const WholesalerDashboard: React.FC = () => {
     return `${dateObj.toLocaleDateString()} ${dateObj.toLocaleTimeString()}`;
   };
 
+  const renderSidebar = () => (
+    <Modal
+      visible={sidebarVisible}
+      transparent={true}
+      animationType="none"
+      onRequestClose={closeSidebar}
+    >
+      <View style={styles.modalOverlay}>
+        <Animated.View
+          style={[
+            styles.modalBackground,
+            { opacity: overlayAnim },
+          ]}
+        >
+          <TouchableOpacity
+            style={{ flex: 1 }}
+            activeOpacity={1}
+            onPress={closeSidebar}
+          />
+        </Animated.View>
+
+        <Animated.View
+          style={[
+            styles.sidebar,
+            { transform: [{ translateX: slideAnim }] }
+          ]}
+        >
+          {/* Profile Section */}
+          <View style={styles.profileSection}>
+            <View style={styles.profilePicLarge}>
+              <Text style={styles.profileInitialsLarge}>
+                {getInitials(user?.name)}
+              </Text>
+            </View>
+            <Text style={styles.userName}>{user?.name || "Wholesaler"}</Text>
+            <Text style={styles.userRole}>Wholesaler</Text>
+          </View>
+
+          {/* Menu Items */}
+          <View style={styles.menuSection}>
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleManageRetailers}
+            >
+              <Text style={styles.menuText}>Manage Retailers</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleRateHistory}
+            >
+              <Text style={styles.menuText}>Rate History</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleViewReports}
+            >
+              <Text style={styles.menuText}>View Reports</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.menuItem}
+              onPress={handleSettings}
+            >
+              <Text style={styles.menuText}>Settings</Text>
+            </TouchableOpacity>
+
+            <View style={styles.menuDivider} />
+
+            <TouchableOpacity
+              style={[styles.menuItem, styles.logoutMenuItem]}
+              onPress={() => {
+                closeSidebar();
+                handleLogout();
+              }}
+            >
+              <Text style={[styles.menuText, styles.logoutText]}>Logout</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </View>
+    </Modal>
+  );
+
   return (
     <SafeAreaProvider>
       <StatusBar
@@ -192,48 +363,41 @@ const WholesalerDashboard: React.FC = () => {
         backgroundColor="transparent"
         translucent={true}
       />
-      <SafeAreaView style={{ flex: 1 }} edges={['top']}>
-        <LinearGradient
-          colors={['#f3e8ff', '#fdf2f8']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={{ flex: 1 }}
-        >
-          <Box flex={1}>
-            {/* Header */}
-            <LinearGradient
-              colors={['#a855f7', '#ec4899']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={{
-                paddingTop: 10,
-                paddingHorizontal: 10,
-                height: 80
-              }}
-            >
-              <HStack justifyContent="space-between" alignItems="center" px={4}>
-                <VStack>
-                  <Heading size="lg" color="white">
-                    सोने भाव (Sone Bhav)
-                  </Heading>
-                  <Text color="white" fontSize="sm">
-                    Wholesaler Dashboard
-                  </Text>
-                </VStack>
-                <Button
-                  variant="outline"
-                  _web={{ borderWidth: 1, borderColor: 'white' }}
-                  _ios={{ borderWidth: 1, borderColor: 'white' }}
-                  _android={{ borderWidth: 1, borderColor: 'white' }}
-                  backgroundColor="transparent"
-                  _text={{ color: 'white' }}
-                  onPress={handleLogout}
-                  size="sm"
-                >
-                  Logout
-                </Button>
-              </HStack>
-            </LinearGradient>
+    <SafeAreaView style={{ flex: 1 }} edges={['top']}>
+      <LinearGradient
+        colors={['#f3e8ff', '#fdf2f8']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{ flex: 1 }}
+      >
+        <Box flex={1}>
+          {/* Header */}
+          <LinearGradient
+            colors={['#a855f7', '#ec4899']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{
+              paddingTop: 10,
+              paddingHorizontal: 10,
+              height: 80
+            }}
+          >
+            <HStack justifyContent="space-between" alignItems="center">
+              <VStack>
+                <Heading size="lg" color="white">
+                  सोने भाव (Sone Bhav)
+                </Heading>
+                <Text color="white" fontSize="sm">
+                  Wholesaler Dashboard
+                </Text>
+              </VStack>
+              <TouchableOpacity style={styles.profilePic} onPress={toggleSidebar}>
+                <Text style={styles.profileInitials}>
+                  {getInitials(user?.name)}
+                </Text>
+              </TouchableOpacity>
+            </HStack>
+          </LinearGradient>
 
             {/* Main Content */}
             <ScrollView
@@ -293,7 +457,8 @@ const WholesalerDashboard: React.FC = () => {
                       <Badge colorScheme="green" variant="subtle">
                         Live
                       </Badge>
-                    </HStack>                  <VStack space={2}>
+                    </HStack>
+                  <VStack space={2}>
                       {loadingRates ? (
                         <VStack
                           flex={1}
@@ -330,7 +495,8 @@ const WholesalerDashboard: React.FC = () => {
                                 <Text fontSize="xs" color="gray.500">
                                   Updated: {formatDateTime(rate.timestamp)}
                                 </Text>
-                              </VStack>                            <Text
+                              </VStack>
+                            <Text
                                 fontSize="lg"
                                 fontWeight="bold"
                                 color="green.600"
@@ -429,26 +595,15 @@ const WholesalerDashboard: React.FC = () => {
                     >
                       Manage Retailers
                     </Button>
-                    {/* <Button
-                    flex={1}
-                    variant="outline"
-                    _web={{ borderWidth: 1, borderColor: 'purple.600' }}
-                    _ios={{ borderWidth: 1, borderColor: 'purple.600' }}
-                    _android={{ borderWidth: 1, borderColor: 'purple.600' }}
-                    backgroundColor="transparent"
-                    _text={{ color: 'purple.600', fontWeight: 'bold' }}
-                    onPress={handleViewReports}
-                    borderRadius="lg"
-                    py={3}
-                  >
-                    View Reports
-                  </Button> */}
-                  </HStack>
+                    </HStack>
                 </VStack>
               </VStack>
             </ScrollView>
           </Box>
         </LinearGradient>
+      
+      {/* Sidebar */}
+      {renderSidebar()}
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -464,7 +619,101 @@ const styles = StyleSheet.create({
     color: '#1A202C',
     backgroundColor: '#FFFFFF',
   },
+  profilePic: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "#ec4899",
+    justifyContent: "center",
+    alignItems: "center",
+    borderWidth: 2,
+    borderColor: "#fff",
+  },
+  profileInitials: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  // Sidebar styles
+  modalOverlay: {
+    flex: 1,
+    flexDirection: "row",
+  },
+  modalBackground: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  sidebar: {
+    width: screenWidth * 0.8,
+    backgroundColor: "#fff",
+    height: "100%",
+    elevation: 5,
+    right: 0,
+    position: "absolute",
+    shadowColor: "#000",
+    shadowOffset: { width: 2, height: 0 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  profileSection: {
+    backgroundColor: "#a855f7",
+    padding: 20,
+    alignItems: "center",
+    paddingTop: 60,
+  },
+  profilePicLarge: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#ec4899",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 15,
+    borderWidth: 3,
+    borderColor: "#fff",
+  },
+  profileInitialsLarge: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 24,
+  },
+  userName: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  userRole: {
+    color: "#e5e7eb",
+    fontSize: 14,
+  },
+  menuSection: {
+    flex: 1,
+    paddingTop: 20,
+  },
+  menuItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f3f4f6",
+  },
+  menuText: {
+    fontSize: 16,
+    color: "#374151",
+    fontWeight: "500",
+  },
+  menuDivider: {
+    height: 1,
+    backgroundColor: "#d1d5db",
+    marginVertical: 10,
+  },
+  logoutMenuItem: {
+    borderBottomWidth: 0,
+  },
+  logoutText: {
+    color: "#ef4444",
+  },
 });
 
 export default WholesalerDashboard;
-
