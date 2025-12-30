@@ -77,9 +77,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.goldrate.app"
+    namespace "com.goldrate"
     defaultConfig {
-        applicationId "com.goldrate.app"
+        applicationId "com.goldrate"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 9

@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:658697497871:android:aae914f2269568180ae27a",
+        "mobilesdk_app_id": "1:658697497871:android:b04b23cecdd4e4970ae27a",
         "android_client_info": {
-          "package_name": "com.goldrate.app"
+          "package_name": "com.goldrate"
         }
       },
       "oauth_client": [],

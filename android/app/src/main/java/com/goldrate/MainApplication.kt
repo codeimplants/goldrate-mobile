@@ -1,4 +1,4 @@
-package com.goldrate.app
+package com.goldrate
 
 import android.app.Application
 import com.facebook.react.PackageList
