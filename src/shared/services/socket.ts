@@ -1,11 +1,9 @@
 import { io, Socket } from 'socket.io-client';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-// import Config from 'react-native-config';
 import { API_BASE } from '../../constant';
 
 
 let socket: Socket | null = null;
-// const API_BASE = Config.API_BASE;
 
 export async function connectSocket(): Promise<Socket> {
   const token = await AsyncStorage.getItem('token');
@@ -13,32 +11,21 @@ export async function connectSocket(): Promise<Socket> {
   if (!socket) {
     socket = io(API_BASE, {
       transports: ['websocket'],
-      auth: { token: token || '' },   //   backend expects auth.token
+      auth: { token },
     });
 
     socket.on('connect', () => {
-      console.log(' RN Socket connected! ID:', socket?.id);
+      console.log('✅ Socket connected:', socket?.id);
     });
 
-    socket.on('connect_error', (err) => {
-      console.log('❌ RN Socket connect error:', err.message);
+    socket.on('disconnect', reason => {
+      console.log('⚠️ Socket disconnected:', reason);
     });
-
-    socket.on('disconnect', (reason) => {
-      console.log('⚠️ RN Socket disconnected:', reason);
-    });
-
-    (globalThis as any).__socket = socket;
   } else {
-    socket.auth = { token: token || '' } as any;  //   update token dynamically
+    socket.auth = { token } as any;
     if (!socket.connected) socket.connect();
   }
 
-  return socket;
-}
-
-
-export function getSocket(): Socket | null {
   return socket;
 }
 
@@ -47,4 +34,8 @@ export function disconnectSocket() {
     socket.disconnect();
     socket = null;
   }
+}
+
+export function getSocket() {
+  return socket;
 }
