@@ -1,4 +1,4 @@
-package com.goldrate.app
+package com.goldrate
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
