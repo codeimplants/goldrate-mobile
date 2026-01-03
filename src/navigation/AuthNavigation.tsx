@@ -4,6 +4,7 @@ import Login from '../feature/auth/components/Login/Login';
 import OtpScreen from '../feature/auth/components/OtpScreen/OtpScreen';
 import type { AuthStackParamList } from './Types/types';
 import { useAuth } from '../feature/auth/hooks/useAuth';
+import HomePage from '../pages/HomePage/HomePage';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
@@ -19,9 +20,10 @@ const AuthNavigation: React.FC = () => {
 
   return (
     <Stack.Navigator
-      initialRouteName="login"
+      initialRouteName="homepage"
       screenOptions={{ headerShown: false }}
     >
+      <Stack.Screen name="homepage" component={HomePage} />
       <Stack.Screen name="login" component={Login} />
       <Stack.Screen name="otp" component={OtpScreen} />
     </Stack.Navigator>

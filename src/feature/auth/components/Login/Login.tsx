@@ -91,6 +91,25 @@ const Login: React.FC = () => {
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: 'transparent' }}>
       <LinearGradient colors={['#f3e8ff', '#fdf2f8']} style={{ flex: 1 }}>
+       
+ {/* Back Arrow Button */}
+        <Box position="absolute" top={4} left={4} zIndex={1}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate('homepage' as never)}
+            style={styles.backButton}
+          >
+            <Svg width={24} height={24} viewBox="0 0 24 24" fill="none">
+              <Path
+                d="M19 12H5M12 19l-7-7 7-7"
+                stroke="#7d36a0"
+                strokeWidth={2}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </Svg>
+          </TouchableOpacity>
+        </Box>
+
         <KeyboardAvoidingView
           style={{ flex: 1 }}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -253,6 +272,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginTop: 20,
   },
+   backButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    borderRadius: 20,
+    padding: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+
 });
 
 export default Login;
