@@ -199,9 +199,9 @@ return (
           <View key={rate.id} style={styles.rateCard}>
             <View style={styles.rateInfo}>
               <Text style={styles.metalName}>{rate.name}</Text>
-              {rate.isPopular && (
+              {/* {rate.isPopular && (
                 <Text style={styles.popularTag}>Most Popular</Text>
-              )}
+              )} */}
             </View>
             <View style={styles.priceContainer}>
               {refreshing ? (
@@ -336,13 +336,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   refreshButton: {
-    paddingVertical: 18,
+    paddingVertical: 14,
     alignItems: 'center',
+    borderTopWidth: 1,
+  borderTopColor: '#ccc',
   },
   refreshText: {
     color: '#8b5cf6',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '500',
+    paddingVertical: 12,
   },
   refreshTextDisabled: {
     color: '#cbd5e1',
