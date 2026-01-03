@@ -1,5 +1,6 @@
 // types.ts
 export type NavigationStackParamList = {
+  homepage: undefined;
   login: undefined;
   otp: undefined;
   adminDashboard: undefined;
@@ -11,6 +12,7 @@ export type NavigationStackParamList = {
 };
 
 export type AuthStackParamList = {
+  homepage: undefined;
   login: undefined;
   otp: undefined;
 };
