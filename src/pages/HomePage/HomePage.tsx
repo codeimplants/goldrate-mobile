@@ -5,8 +5,6 @@ import { getLiveRates, LiveRates } from '../../shared/services/liveRates';
 import LinearGradient from 'react-native-linear-gradient';
 import { HStack } from 'native-base';
 
-import Icon from 'react-native-vector-icons/Ionicons';
-
 interface MetalRate {
   id: string;
   name: string;
