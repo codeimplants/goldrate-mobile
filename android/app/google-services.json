@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "658697497871",
-    "project_id": "goldrate-app",
-    "storage_bucket": "goldrate-app.firebasestorage.app"
+    "project_number": "260146781432",
+    "project_id": "sone-bhav",
+    "storage_bucket": "sone-bhav.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:658697497871:android:b04b23cecdd4e4970ae27a",
+        "mobilesdk_app_id": "1:260146781432:android:334a8ab9a66dec263c6f0d",
         "android_client_info": {
           "package_name": "com.goldrate"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBY_7dbCWUDEH-Y2g4k2HPbZQjyrr1_o9s"
+          "current_key": "AIzaSyBiPD1b5TimTYr-46eka2XaDzJqZYjQ3-k"
         }
       ],
       "services": {
