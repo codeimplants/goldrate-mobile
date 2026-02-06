@@ -22,6 +22,7 @@ target 'goldrate' do
 
   # ✅ OneSignal XCFramework support
   pod 'OneSignalXCFramework', '>= 5.0', :modular_headers => true
+  pod 'Firebase/Analytics'
 
   # ✅ Firebase / GoogleUtilities fix for Swift module maps
   pod 'FirebaseCoreInternal', :modular_headers => true
