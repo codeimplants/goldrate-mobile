@@ -55,7 +55,6 @@ export default function App() {
     }, 1500);
   };
 
-
   return (
     <>
       <NativeBaseProvider>   {/*  wrap your entire app */}
