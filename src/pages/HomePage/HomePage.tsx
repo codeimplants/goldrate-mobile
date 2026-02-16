@@ -291,7 +291,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingTop: 50,
-    paddingBottom: 20,
   },
   headerTitle: {
     fontSize: 20,
@@ -330,8 +329,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   lastUpdatedContainer: {
-    alignItems: 'center',
-    marginBottom: 24,
+    alignItems: 'center'
   },
   lastUpdated: {
     textAlign: 'center',
