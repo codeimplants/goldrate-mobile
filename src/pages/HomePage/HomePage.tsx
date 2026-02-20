@@ -186,7 +186,6 @@ const Homepage: React.FC<{ navigation: any }> = ({ navigation }) => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Today's Metal Rates</Text>
         <LinearGradient
-
           colors={['#a855f7', '#ec4899']}
           style={styles.buttonWrapper}
           start={{ x: 0, y: 0 }}
@@ -304,7 +303,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
     paddingHorizontal: 24,
     paddingVertical: 10,
-    borderRadius: 25,
   },
   buttonWrapper: {
     borderRadius: 25,
@@ -382,8 +380,6 @@ const styles = StyleSheet.create({
   detailSection: {
     paddingHorizontal: 16,
     paddingBottom: 16,
-    borderTopWidth: 1,
-    borderTopColor: '#f3f4f6',
     backgroundColor: '#fafafa',
   },
   detailRow: {
@@ -414,8 +410,6 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     alignItems: 'flex-end',
     justifyContent: 'flex-end',
-    borderTopWidth: 1,
-    borderTopColor: '#e9d5ff',
     gap: 8,
     marginLeft: "auto",
     marginTop: -5
